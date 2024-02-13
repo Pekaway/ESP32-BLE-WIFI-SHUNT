@@ -36,10 +36,13 @@ Errors and wish list:
 **Known problems:**
 - DS18B20 connected to SPI FLash pin 24, this causes a problem and the ESP does not boot 
 - DeepSleep Flash problem with the ESP32-C3 USB-C port
+- own consumption is not counted
+- below 100mA the accuracy decreases
 
 
 **Hints:** 
-- If the COM port is not found turn the USB-C cable. Not all pins are assigned. 
+- If the COM port is not found turn the USB-C cable. Not all pins are assigned.
+- 
 
 
 

@@ -32,7 +32,7 @@ Currently works with a 200A/75MV shunt.
 
 **Known issues:**
 
-- DS18B20 connected to SPI Flash pin 24, this causes a problem and the ESP will not boot.
+- WS28b12 connected to SPI Flash pin 24, this causes a problem and the ESP will not boot.
 - DeepSleep Flash problem with ESP32-C3 USB-C port
 - own consumption is not counted
 - below 100mA accuracy decreases

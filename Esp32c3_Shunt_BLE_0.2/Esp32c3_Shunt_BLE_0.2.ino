@@ -95,7 +95,7 @@ void setPixelColor(){
     // Get current value
     float current = INA.getBusMicroAmps(0) / 1000.0; // Convert to milliamps
 
-    brightness = brightness*10;
+    brightness = brightness*2;
 
     // Set LED color based on current value
     if (current < 0) { // Positive current (charging)

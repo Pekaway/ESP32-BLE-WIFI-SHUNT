@@ -1,0 +1,53 @@
+#include "WiFiManagerPortal.h"
+
+WiFiManagerPortal::WiFiManagerPortal() {
+  wifiManager.setSaveConfigCallback([this]() { saveConfigCallback(); });
+  wifiManager.setSaveParamsCallback([this]() { saveParamsCallback(); });
+
+  custom_max_amp_hours =
+      WiFiManagerParameter("max_amp_hours", "Max Amp Hours", "", 10);
+  custom_soc_percent =
+      WiFiManagerParameter("soc_percent", "Soc Percentage", "", 10);
+}
+
+void WiFiManagerPortal::begin() {
+  logger.info("Starting WiFiManager portal...");
+  setupPortal();
+}
+
+void WiFiManagerPortal::handle() { wifiManager.process(); }
+
+void WiFiManagerPortal::setupPortal() {
+  wifiManager.addParameter(&custom_max_amp_hours);
+  wifiManager.addParameter(&custom_soc_percent);
+
+  wifiManager.setConfigPortalBlocking(false);
+  wifiManager.setConfigPortalTimeout(60);
+
+  if (!wifiManager.autoConnect("PekawayShuntAP")) {
+    logger.critical("Failed to connect to WiFi");
+    return;
+  }
+
+  logger.info("Connected to WiFi");
+}
+
+void WiFiManagerPortal::saveConfigCallback() {
+  logger.info("Configuration saved");
+}
+
+void WiFiManagerPortal::saveParamsCallback() {
+  logger.info("Parameters saved");
+
+  Shunt& shunt = Shunt::getInstance();
+
+  long long const maxAmpHours =
+      strtoll(custom_max_amp_hours.getValue(), nullptr, 10);
+  long long const socPercent =
+      strtoll(custom_soc_percent.getValue(), nullptr, 10);
+
+  shunt.setMaxCapacity(maxAmpHours);
+  shunt.setCurrentStateOfCharge(socPercent);
+
+  logger.info("Shunt values updated from portal");
+}

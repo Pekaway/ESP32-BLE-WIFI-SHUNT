@@ -1,12 +1,14 @@
 #include <network/BluetoothManager.h>
+#include <network/WiFiManagerPortal.h>
 #include <sensors/Shunt.h>
-#include <utils/ConfigManager.h>
 #include <Arduino.h>
 #include <Logger.h>
 #include "Constants.h"
 
-BluetoothManager& btManager = BluetoothManager::getInstance();
 Logger logger(Serial);
+
+BluetoothManager& btManager = BluetoothManager::getInstance();
+WiFiManagerPortal wifiManagerPortal;
 
 BLECharacteristic* voltageChar;
 BLECharacteristic* currentChar;
@@ -59,6 +61,8 @@ void setup() {
 
   btManager.startAdvertising();
 
+  wifiManagerPortal.begin();
+
   logger.info("Setup complete");
 }
 
@@ -75,4 +79,6 @@ void loop() {
   btManager.updateCharacteristicValue(voltageChar, String(shunt.getBusVoltage()).c_str());
   btManager.updateCharacteristicValue(currentChar, String(shunt.getBusCurrent()).c_str());
   btManager.updateCharacteristicValue(socChar, String(shunt.getStateOfCharge()).c_str());
+
+  wifiManagerPortal.handle();
 }

@@ -11,11 +11,9 @@ void BluetoothManager::init(const char* serverName) {
     pServer = BLEDevice::createServer();
     pServer->setCallbacks(new ServerCallbacks(this));
 
-    Logger l(Serial);
-    l.prependLog = [] {
+    logger.prependLog = [] {
         return "BLE";
     };
-    logger = l;
 
     String message = "Server initialized as: ";
     message += serverName;
@@ -41,7 +39,7 @@ BLEService* BluetoothManager::createService(const char* serviceUUID) {
 
         return service;
     }
-    logger.info("Server not initialized");
+    logger.critical("Server not initialized");
     return nullptr;
 }
 
@@ -58,7 +56,7 @@ BLECharacteristic* BluetoothManager::createReadCharacteristic(BLEService* servic
 
         return characteristic;
     }
-    logger.info("Service is null");
+    logger.critical("Service is null");
     return nullptr;
 }
 
@@ -76,7 +74,7 @@ BLECharacteristic* BluetoothManager::createNotifyCharacteristic(BLEService* serv
 
         return characteristic;
     }
-    logger.info("Service is null");
+    logger.critical("Service is null");
     return nullptr;
 }
 
@@ -95,17 +93,16 @@ BLECharacteristic* BluetoothManager::createWriteCharacteristic(BLEService* servi
 
         return characteristic;
     }
-    logger.info("Service is null");
+    logger.critical("Service is null");
     return nullptr;
 }
 
 void BluetoothManager::updateCharacteristicValue(BLECharacteristic* characteristic, const char* value) {
     if (characteristic) {
         characteristic->setValue(value);
-        // If the characteristic has notify property, notify connected clients
-        if ((characteristic->getProperties() & BLECharacteristic::PROPERTY_NOTIFY) != 0) {
-            characteristic->notify();
-        }
+    }
+    else {
+        logger.critical("Characteristic is null");
     }
 }
 

@@ -1,7 +1,3 @@
-//
-// Created by willipreuk on 08/03/25.
-//
-
 #ifndef BLUETOOTHMANAGER_H
 #define BLUETOOTHMANAGER_H
 
@@ -36,7 +32,7 @@ public:
     bool isConnected() const;
 
 private:
-    Logger logger;
+    Logger logger = Logger(Serial);
 
     BluetoothManager() = default;
     ~BluetoothManager() = default;
@@ -46,21 +42,21 @@ private:
     BLEServer* pServer = nullptr;
     bool deviceConnected = false;
 
-    class ServerCallbacks : public BLEServerCallbacks {
-    private:
+    class ServerCallbacks final : public BLEServerCallbacks {
         BluetoothManager* manager;
-    public:
-        ServerCallbacks(BluetoothManager* mgr) : manager(mgr) {}
-        void onConnect(BLEServer* pServer) override;
-        void onDisconnect(BLEServer* pServer) override;
+
+        public:
+            ServerCallbacks(BluetoothManager* mgr) : manager(mgr) {}
+            void onConnect(BLEServer* pServer) override;
+            void onDisconnect(BLEServer* pServer) override;
     };
 
-    class CharacteristicCallbacks : public BLECharacteristicCallbacks {
-    private:
+    class CharacteristicCallbacks final : public BLECharacteristicCallbacks {
         std::function<void(const std::string&)> callback;
-    public:
-        CharacteristicCallbacks(std::function<void(const std::string&)> cb) : callback(cb) {}
-        void onWrite(BLECharacteristic* pCharacteristic) override;
+
+        public:
+            CharacteristicCallbacks(std::function<void(const std::string&)> cb) : callback(cb) {}
+            void onWrite(BLECharacteristic* pCharacteristic) override;
     };
 };
 

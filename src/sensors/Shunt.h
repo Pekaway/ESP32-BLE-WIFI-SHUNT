@@ -5,7 +5,6 @@
 #include <INA.h>
 #include <SPIFFS.h>
 #include <Logger.h>
-#include <functional>
 
 class Shunt {
 public:

@@ -1,20 +1,20 @@
 #ifndef WIFIMANAGERPORTAL_H
 #define WIFIMANAGERPORTAL_H
 
-#include <WiFiManager.h>
 #include <sensors/Shunt.h>
 #include <Logger.h>
+#include <WiFiManager.h>
 
 class WiFiManagerPortal {
-public:
+ public:
   WiFiManagerPortal();
   void begin();
   void handle();
 
-private:
+ private:
   WiFiManager wifiManager;
-  WiFiManagerParameter custom_max_amp_hours;
-  WiFiManagerParameter custom_soc_percent;
+  WiFiManagerParameter* custom_max_amp_hours;
+  WiFiManagerParameter* custom_soc_percent;
 
   Logger logger = Logger(Serial);
 
@@ -23,4 +23,4 @@ private:
   void saveParamsCallback();
 };
 
-#endif // WIFIMANAGERPORTAL_H
+#endif  // WIFIMANAGERPORTAL_H

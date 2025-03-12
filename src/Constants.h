@@ -19,4 +19,4 @@ constexpr uint16_t MAXIMUM_AMPS = 1022;
 constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";
 
-#endif // CONSTANTS_H
+#endif  // CONSTANTS_H

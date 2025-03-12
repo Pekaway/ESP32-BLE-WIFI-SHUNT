@@ -2,26 +2,26 @@
 #define CONFIGMANAGER_H
 
 #include <Arduino.h>
-#include <LittleFS.h>
 #include <ArduinoJson.h>
+#include <LittleFS.h>
 #include <Logger.h>
 
 class ConfigManager {
-public:
+ public:
   static ConfigManager& getInstance();
 
   bool init();
 
-  template<typename T>
-  T get(const String& key, T defaultValue = T()) {
+  template <typename T>
+  T get(String const& key, T defaultValue = T()) {
     if (!jsonDoc[key].is<T>()) {
       return defaultValue;
     }
     return jsonDoc[key].as<T>();
   }
 
-  template<typename T>
-  bool set(const String& key, T value) {
+  template <typename T>
+  bool set(String const& key, T value) {
     jsonDoc[key] = value;
     configDirty = true;
     return true;
@@ -32,18 +32,18 @@ public:
 
   bool resetToDefaults();
 
-  bool hasKey(const String& key);
+  bool hasKey(String const& key);
   String* getKeys(int& count);
 
-private:
+ private:
   ConfigManager();
   ~ConfigManager();
-  ConfigManager(const ConfigManager&) = delete;
-  ConfigManager& operator=(const ConfigManager&) = delete;
+  ConfigManager(ConfigManager const&) = delete;
+  ConfigManager& operator=(ConfigManager const&) = delete;
 
   JsonDocument jsonDoc;
 
-  const char* configFilePath = "/config.json";
+  char const* configFilePath = "/config.json";
 
   Logger logger = Logger(Serial);
 
@@ -54,4 +54,4 @@ private:
   void createDefaultConfig();
 };
 
-#endif //CONFIGMANAGER_H
+#endif  // CONFIGMANAGER_H

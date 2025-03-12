@@ -1,9 +1,9 @@
+#include "Constants.h"
 #include <network/BluetoothManager.h>
 #include <network/WiFiManagerPortal.h>
 #include <sensors/Shunt.h>
 #include <Arduino.h>
 #include <Logger.h>
-#include "Constants.h"
 
 Logger logger(Serial);
 
@@ -53,11 +53,15 @@ void setup() {
   BLEService* shuntService = btManager.createService(SERVICE_UUID);
 
   // Initialize BLE characteristics
-  voltageChar = btManager.createReadCharacteristic(shuntService, VOLTAGE_CHAR_UUID);
-  currentChar = btManager.createReadCharacteristic(shuntService, CURRENT_CHAR_UUID);
+  voltageChar =
+      btManager.createReadCharacteristic(shuntService, VOLTAGE_CHAR_UUID);
+  currentChar =
+      btManager.createReadCharacteristic(shuntService, CURRENT_CHAR_UUID);
   socChar = btManager.createReadCharacteristic(shuntService, SOC_CHAR_UUID);
-  btManager.createWriteCharacteristic(shuntService, MAX_AMP_HOURS_CHAR_UUID, receivedMaxAmpCallback);
-  btManager.createWriteCharacteristic(shuntService, SOC_PERCENT_CHAR_UUID, receivedSOCPercent);
+  btManager.createWriteCharacteristic(shuntService, MAX_AMP_HOURS_CHAR_UUID,
+                                      receivedMaxAmpCallback);
+  btManager.createWriteCharacteristic(shuntService, SOC_PERCENT_CHAR_UUID,
+                                      receivedSOCPercent);
 
   btManager.startAdvertising();
 
@@ -76,9 +80,12 @@ void loop() {
   shunt.update();
 
   // Update BLE characteristics
-  btManager.updateCharacteristicValue(voltageChar, String(shunt.getBusVoltage()).c_str());
-  btManager.updateCharacteristicValue(currentChar, String(shunt.getBusCurrent()).c_str());
-  btManager.updateCharacteristicValue(socChar, String(shunt.getStateOfCharge()).c_str());
+  btManager.updateCharacteristicValue(voltageChar,
+                                      String(shunt.getBusVoltage()).c_str());
+  btManager.updateCharacteristicValue(currentChar,
+                                      String(shunt.getBusCurrent()).c_str());
+  btManager.updateCharacteristicValue(socChar,
+                                      String(shunt.getStateOfCharge()).c_str());
 
   wifiManagerPortal.handle();
 }

@@ -1,63 +1,68 @@
 #ifndef BLUETOOTHMANAGER_H
 #define BLUETOOTHMANAGER_H
 
+#include <functional>
+#include <string>
+#include <BLE2902.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
-#include <BLE2902.h>
-#include <functional>
 #include <Logger.h>
-#include <string>
 
 class BluetoothManager {
-public:
-    static BluetoothManager& getInstance();
+ public:
+  static BluetoothManager& getInstance();
 
-    void init(const char* serverName);
+  void init(char const* serverName);
 
-    void startAdvertising();
+  void startAdvertising();
 
-    BLEService* createService(const char* serviceUUID);
+  BLEService* createService(char const* serviceUUID);
 
-    BLECharacteristic* createReadCharacteristic(BLEService* service, const char* charUUID);
+  BLECharacteristic* createReadCharacteristic(BLEService* service,
+                                              char const* charUUID);
 
-    // Added for notify capabilities
-    BLECharacteristic* createNotifyCharacteristic(BLEService* service, const char* charUUID);
+  // Added for notify capabilities
+  BLECharacteristic* createNotifyCharacteristic(BLEService* service,
+                                                char const* charUUID);
 
-    BLECharacteristic* createWriteCharacteristic(BLEService* service, const char* charUUID,
-                                                 std::function<void(const std::string&)> callback);
+  BLECharacteristic* createWriteCharacteristic(
+      BLEService* service, char const* charUUID,
+      std::function<void(std::string const&)> callback);
 
-    void updateCharacteristicValue(BLECharacteristic* characteristic, const char* value);
+  void updateCharacteristicValue(BLECharacteristic* characteristic,
+                                 char const* value);
 
-    bool isConnected() const;
+  bool isConnected() const;
 
-private:
-    Logger logger = Logger(Serial);
+ private:
+  Logger logger = Logger(Serial);
 
-    BluetoothManager() = default;
-    ~BluetoothManager() = default;
-    BluetoothManager(const BluetoothManager&) = delete;
-    BluetoothManager& operator=(const BluetoothManager&) = delete;
+  BluetoothManager() = default;
+  ~BluetoothManager() = default;
+  BluetoothManager(BluetoothManager const&) = delete;
+  BluetoothManager& operator=(BluetoothManager const&) = delete;
 
-    BLEServer* pServer = nullptr;
-    bool deviceConnected = false;
+  BLEServer* pServer = nullptr;
+  bool deviceConnected = false;
 
-    class ServerCallbacks final : public BLEServerCallbacks {
-        BluetoothManager* manager;
+  class ServerCallbacks final : public BLEServerCallbacks {
+    BluetoothManager* manager;
 
-        public:
-            ServerCallbacks(BluetoothManager* mgr) : manager(mgr) {}
-            void onConnect(BLEServer* pServer) override;
-            void onDisconnect(BLEServer* pServer) override;
-    };
+   public:
+    ServerCallbacks(BluetoothManager* mgr) : manager(mgr) {}
+    void onConnect(BLEServer* pServer) override;
+    void onDisconnect(BLEServer* pServer) override;
+  };
 
-    class CharacteristicCallbacks final : public BLECharacteristicCallbacks {
-        std::function<void(const std::string&)> callback;
+  class CharacteristicCallbacks final : public BLECharacteristicCallbacks {
+    std::function<void(std::string const&)> callback;
 
-        public:
-            CharacteristicCallbacks(std::function<void(const std::string&)> cb) : callback(cb) {}
-            void onWrite(BLECharacteristic* pCharacteristic) override;
-    };
+   public:
+    CharacteristicCallbacks(std::function<void(std::string const&)> cb)
+        : callback(cb) {}
+    void onWrite(BLECharacteristic* pCharacteristic) override;
+  };
 };
 
-#endif //BLUETOOTHMANAGER_H
+#endif  // BLUETOOTHMANAGER_H

@@ -1,14 +1,15 @@
-#include "Constants.h"
+#include "constants.h"
+#include "network/MQTTManager.h"
+#include "network/WiFiManagerPortal.h"
 #include <network/BluetoothManager.h>
-#include <network/WiFiManagerPortal.h>
 #include <sensors/Shunt.h>
 #include <Arduino.h>
 #include <Logger.h>
 
-Logger logger(Serial);
-
 BluetoothManager& btManager = BluetoothManager::getInstance();
-WiFiManagerPortal wifiManagerPortal;
+Logger logger(Serial);
+WiFiManagerPortal wifiPortal;
+MQTTManager mqttManager;
 
 BLECharacteristic* voltageChar;
 BLECharacteristic* currentChar;
@@ -65,7 +66,11 @@ void setup() {
 
   btManager.startAdvertising();
 
-  wifiManagerPortal.begin();
+  // Start WiFiManager portal
+  wifiPortal.begin();
+
+  // Start MQTTManager
+  mqttManager.begin();
 
   logger.info("Setup complete");
 }
@@ -87,5 +92,14 @@ void loop() {
   btManager.updateCharacteristicValue(socChar,
                                       String(shunt.getStateOfCharge()).c_str());
 
-  wifiManagerPortal.handle();
+  // Handle WiFiManager client requests
+  wifiPortal.handle();
+
+  // Handle MQTT client
+  mqttManager.handle();
+
+  // Publish shunt values to MQTT
+  mqttManager.publishShuntValues();
+
+  delay(10);
 }

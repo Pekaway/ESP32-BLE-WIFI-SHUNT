@@ -1,6 +1,7 @@
 #ifndef CONFIGMANAGER_H
 #define CONFIGMANAGER_H
 
+#include "configKeys.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <LittleFS.h>
@@ -13,16 +14,18 @@ class ConfigManager {
   bool init();
 
   template <typename T>
-  T get(String const& key, T defaultValue = T()) {
-    if (!jsonDoc[key].is<T>()) {
+  T get(ConfigKey key, T defaultValue = T()) {
+    char const* keyStr = ConfigKeys::toString(key);
+    if (!jsonDoc[keyStr].is<T>()) {
       return defaultValue;
     }
-    return jsonDoc[key].as<T>();
+    return jsonDoc[keyStr].as<T>();
   }
 
   template <typename T>
-  bool set(String const& key, T value) {
-    jsonDoc[key] = value;
+  bool set(ConfigKey key, T value) {
+    char const* keyStr = ConfigKeys::toString(key);
+    jsonDoc[keyStr] = value;
     configDirty = true;
     return true;
   }
@@ -32,7 +35,7 @@ class ConfigManager {
 
   bool resetToDefaults();
 
-  bool hasKey(String const& key);
+  bool hasKey(ConfigKey key);
   String* getKeys(int& count);
 
  private:

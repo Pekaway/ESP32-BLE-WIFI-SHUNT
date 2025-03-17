@@ -15,6 +15,10 @@ auto const SOC_PERCENT_CHAR_UUID = "63d58a25-c22b-4586-b297-f1e310b7b0bc";
 constexpr uint32_t SHUNT_MICRO_OHM = 375;
 constexpr uint16_t MAXIMUM_AMPS = 1022;
 
+// MQTT constants
+auto const MQTT_BROKER = "mqttapi-emqx-vanpi.pekaway.de";
+constexpr auto MQTT_PORT = 8883;
+
 // Other constants
 constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";

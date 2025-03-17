@@ -1,10 +1,12 @@
 #ifndef SHUNT_H
 #define SHUNT_H
 
+#include <utils/configKeys.h>
 #include <Arduino.h>
 #include <INA.h>
 #include <Logger.h>
 #include <SPIFFS.h>
+#include <constants.h>
 
 class Shunt {
  public:
@@ -37,8 +39,8 @@ class Shunt {
   // INA sensor
   INA_Class ina;
   uint8_t deviceCount = 0;
-  uint32_t shuntMicroOhm = 375;
-  uint16_t maximumAmps = 1022;
+  uint32_t shuntMicroOhm = SHUNT_MICRO_OHM;
+  uint32_t maximumAmps = 1022;
 
   // Battery parameters
   int64_t maxCapacityMilliAmpMs = 0;

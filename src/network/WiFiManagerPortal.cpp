@@ -1,13 +1,26 @@
 #include "WiFiManagerPortal.h"
+#include <utils/ConfigManager.h>
 
 WiFiManagerPortal::WiFiManagerPortal() {
   wifiManager.setSaveConfigCallback([this]() { saveConfigCallback(); });
   wifiManager.setSaveParamsCallback([this]() { saveParamsCallback(); });
 
-  custom_max_amp_hours =
-      new WiFiManagerParameter("max_amp_hours", "Max Amp Hours", "", 10);
-  custom_soc_percent =
-      new WiFiManagerParameter("soc_percent", "Soc Percentage", "", 10);
+  ConfigManager& config_manager = ConfigManager::getInstance();
+
+  custom_max_amp_hours = new WiFiManagerParameter(
+      "max_amp_hours", "Max Amp Hours",
+      String(config_manager.get<int64_t>(ConfigKey::MAXIMUM_AMPS)).c_str(), 10);
+  custom_soc_percent = new WiFiManagerParameter(
+      "soc_percent", "Soc Percentage",
+      String(config_manager.get<int64_t>(ConfigKey::INITIAL_SOC)).c_str(), 10);
+  custom_mqtt_user = new WiFiManagerParameter(
+      "mqtt_user", "MQTT user",
+      config_manager.get<String>(ConfigKey::MQTT_USER).c_str(), 32,
+      "type='email'");
+  custom_mqtt_password = new WiFiManagerParameter(
+      "mqtt_password", "MQTT password",
+      config_manager.get<String>(ConfigKey::MQTT_USER).c_str(), 32,
+      "type='password'");
 }
 
 void WiFiManagerPortal::begin() {
@@ -20,6 +33,8 @@ void WiFiManagerPortal::handle() { wifiManager.process(); }
 void WiFiManagerPortal::setupPortal() {
   wifiManager.addParameter(custom_max_amp_hours);
   wifiManager.addParameter(custom_soc_percent);
+  wifiManager.addParameter(custom_mqtt_user);
+  wifiManager.addParameter(custom_mqtt_password);
 
   wifiManager.setConfigPortalBlocking(false);
   wifiManager.setConfigPortalTimeout(60);
@@ -50,4 +65,6 @@ void WiFiManagerPortal::saveParamsCallback() {
   shunt.setCurrentStateOfCharge(socPercent);
 
   logger.info("Shunt values updated from portal");
+
+  ConfigManager& config = ConfigManager::getInstance();
 }

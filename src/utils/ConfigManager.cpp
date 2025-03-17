@@ -57,8 +57,9 @@ bool ConfigManager::resetToDefaults() {
   return saveConfig();
 }
 
-bool ConfigManager::hasKey(String const& key) {
-  return jsonDoc[key].is<JsonVariant>();
+bool ConfigManager::hasKey(ConfigKey key) {
+  char const* keyStr = ConfigKeys::toString(key);
+  return jsonDoc[keyStr].is<JsonVariant>();
 }
 
 String* ConfigManager::getKeys(int& count) {
@@ -120,10 +121,12 @@ bool ConfigManager::readConfigFile() {
 void ConfigManager::createDefaultConfig() {
   jsonDoc.clear();
 
-  jsonDoc["device_name"] = "PekawayShunt";
-  jsonDoc["max_capacity"] = 100;  // Default 100Ah
-  jsonDoc["initial_soc"] = 80;    // Default 80%
-  jsonDoc["shunt_micro_ohm"] = 375;
-  jsonDoc["maximum_amps"] = 1022;
-  jsonDoc["auto_save_interval"] = 30;  // seconds
+  jsonDoc[ConfigKeys::toString(ConfigKey::DEVICE_NAME)] = "PekawayShunt";
+  jsonDoc[ConfigKeys::toString(ConfigKey::MAX_CAPACITY)] = 100;
+  jsonDoc[ConfigKeys::toString(ConfigKey::INITIAL_SOC)] = 80;
+  jsonDoc[ConfigKeys::toString(ConfigKey::SHUNT_MICRO_OHM)] = 375;
+  jsonDoc[ConfigKeys::toString(ConfigKey::MAXIMUM_AMPS)] = 1022;
+  jsonDoc[ConfigKeys::toString(ConfigKey::AUTO_SAVE_INTERVAL)] = 30;
+  jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_USER)] = "";
+  jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_PASSWORD)] = "";
 }

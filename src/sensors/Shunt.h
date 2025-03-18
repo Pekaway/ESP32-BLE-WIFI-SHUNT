@@ -5,7 +5,6 @@
 #include <Arduino.h>
 #include <INA.h>
 #include <Logger.h>
-#include <SPIFFS.h>
 #include <constants.h>
 
 class Shunt {

@@ -16,10 +16,11 @@ bool Shunt::init(uint32_t shuntMicroOhm, uint16_t maximumAmps) {
   this->maximumAmps =
       config.get<uint32_t>(ConfigKey::MAXIMUM_AMPS, maximumAmps);
 
-  deviceCount = ina.begin(this->maximumAmps, this->shuntMicroOhm);
-  if (deviceCount == 0) {
-    logger.critical("No INA device found");
-    return false;
+  deviceCount = ina.begin(this->maximumAmps, this->shuntMicroOhm, 255, 7, 6);
+  while (deviceCount == 0) {
+    logger.critical("No INA device found, retrying in 10 seconds...");
+    delay(10000);
+    deviceCount = ina.begin(this->maximumAmps, this->shuntMicroOhm);
   }
 
   char message[50];

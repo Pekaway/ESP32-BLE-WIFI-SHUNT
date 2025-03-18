@@ -28,7 +28,7 @@ class BluetoothManager {
 
   BLECharacteristic* createWriteCharacteristic(
       BLEService* service, char const* charUUID,
-      std::function<void(std::string const&)> callback);
+      std::function<void(String const&)> callback);
 
   void updateCharacteristicValue(BLECharacteristic* characteristic,
                                  char const* value);
@@ -56,10 +56,10 @@ class BluetoothManager {
   };
 
   class CharacteristicCallbacks final : public BLECharacteristicCallbacks {
-    std::function<void(std::string const&)> callback;
+    std::function<void(String const&)> callback;
 
    public:
-    CharacteristicCallbacks(std::function<void(std::string const&)> cb)
+    CharacteristicCallbacks(std::function<void(String const&)> cb)
         : callback(cb) {}
     void onWrite(BLECharacteristic* pCharacteristic) override;
   };

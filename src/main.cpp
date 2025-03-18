@@ -3,6 +3,7 @@
 #include <network/BluetoothManager.h>
 #include <network/WiFiManagerPortal.h>
 #include <sensors/Shunt.h>
+#include <utils/ConfigManager.h>
 #include <Arduino.h>
 #include <Logger.h>
 
@@ -18,22 +19,22 @@ BLECharacteristic* socChar;
 bool setupAllowed = true;
 unsigned long startUpTime = millis();
 
-void receivedMaxAmpCallback(std::string value) {
+void receivedMaxAmpCallback(String value) {
   logger.info(("Received Max Amp: " + value).c_str());
   if (setupAllowed) {
     Shunt& shunt = Shunt::getInstance();
-    long long const maxAmpHours = std::stoll(value);
+    long long const maxAmpHours = strtoll(value.c_str(), nullptr, 10);
     shunt.setMaxCapacity(maxAmpHours);
   } else {
     logger.warning("Setup already closed, ignoring received max amp hours");
   }
 }
 
-void receivedSOCPercent(std::string value) {
+void receivedSOCPercent(String value) {
   logger.info(("Received SOC percent: " + value).c_str());
   if (setupAllowed) {
     Shunt& shunt = Shunt::getInstance();
-    long long const socPercent = std::stoll(value);
+    long long const socPercent = strtoll(value.c_str(), nullptr, 10);
     shunt.setCurrentStateOfCharge(socPercent);
   } else {
     logger.warning("Setup already closed, ignoring received SOC percent");
@@ -43,6 +44,9 @@ void receivedSOCPercent(std::string value) {
 void setup() {
   Serial.begin(SERIAL_SPEED);
   logger.info("Starting setup...");
+
+  ConfigManager& config = ConfigManager::getInstance();
+  config.init();
 
   Shunt& shunt = Shunt::getInstance();
   if (!shunt.init(SHUNT_MICRO_OHM, MAXIMUM_AMPS)) {
@@ -76,7 +80,7 @@ void setup() {
 }
 
 void loop() {
-  if (startUpTime + 60.000 * 2 < millis()) {
+  if (setupAllowed && startUpTime + 60000 * 2 < millis()) {
     setupAllowed = false;
     logger.info("Setup closed");
   }
@@ -99,7 +103,7 @@ void loop() {
   mqttManager.handle();
 
   // Publish shunt values to MQTT
-  mqttManager.publishShuntValues();
+  // mqttManager.publishShuntValues();
 
-  delay(10);
+  delay(100);
 }

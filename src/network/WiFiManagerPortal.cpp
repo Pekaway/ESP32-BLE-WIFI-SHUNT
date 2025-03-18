@@ -52,8 +52,6 @@ void WiFiManagerPortal::saveConfigCallback() {
 }
 
 void WiFiManagerPortal::saveParamsCallback() {
-  logger.info("Parameters saved");
-
   Shunt& shunt = Shunt::getInstance();
 
   long long const maxAmpHours =
@@ -63,8 +61,14 @@ void WiFiManagerPortal::saveParamsCallback() {
 
   shunt.setMaxCapacity(maxAmpHours);
   shunt.setCurrentStateOfCharge(socPercent);
-
   logger.info("Shunt values updated from portal");
 
   ConfigManager& config = ConfigManager::getInstance();
+  auto const mqttUser = custom_mqtt_user->getValue();
+  auto const mqttPassword = custom_mqtt_password->getValue();
+
+  config.set(ConfigKey::MQTT_USER, mqttUser);
+  config.set(ConfigKey::MQTT_PASSWORD, mqttPassword);
+  config.saveConfig();
+  logger.info("MQTT credentials updated from portal");
 }

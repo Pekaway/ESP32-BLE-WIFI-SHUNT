@@ -2,9 +2,10 @@
 #define MQTTMANAGER_H
 
 #include <sensors/Shunt.h>
+#include <Arduino.h>
 #include <Logger.h>
 #include <MQTT.h>
-#include <WiFi.h>
+#include <NetworkClientSecure.h>
 
 class MQTTManager {
  public:
@@ -14,11 +15,13 @@ class MQTTManager {
   void publishShuntValues();
 
  private:
-  WiFiClient net;
+  NetworkClientSecure net = NetworkClientSecure();
   MQTTClient client;
   Logger logger = Logger(Serial);
 
-  void connect();
+  char* prefix;
+
+  boolean connect();
 };
 
 #endif  // MQTTMANAGER_H

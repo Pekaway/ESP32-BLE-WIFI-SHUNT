@@ -77,7 +77,7 @@ BLECharacteristic* BluetoothManager::createNotifyCharacteristic(
 
 BLECharacteristic* BluetoothManager::createWriteCharacteristic(
     BLEService* service, char const* charUUID,
-    std::function<void(std::string const&)> callback) {
+    std::function<void(String const&)> callback) {
   if (service) {
     BLECharacteristic* characteristic = service->createCharacteristic(
         charUUID, BLECharacteristic::PROPERTY_WRITE);
@@ -117,7 +117,7 @@ void BluetoothManager::ServerCallbacks::onDisconnect(BLEServer* pServer) {
 
 void BluetoothManager::CharacteristicCallbacks::onWrite(
     BLECharacteristic* pCharacteristic) {
-  std::string const value = pCharacteristic->getValue();
+  String const value = pCharacteristic->getValue();
   if (callback) {
     callback(value);
   }

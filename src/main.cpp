@@ -15,6 +15,7 @@ MQTTManager mqttManager;
 BLECharacteristic* voltageChar;
 BLECharacteristic* currentChar;
 BLECharacteristic* socChar;
+BLECharacteristic* chargeChar;
 
 bool setupAllowed = true;
 unsigned long startUpTime = millis();
@@ -41,6 +42,17 @@ void receivedSOCPercent(String value) {
   }
 }
 
+void receivedChargeEfficiency(String value) {
+  logger.info(("Received Charge Efficiency: " + value).c_str());
+  if (setupAllowed) {
+    Shunt& shunt = Shunt::getInstance();
+    uint8_t const chargeEfficiency = strtol(value.c_str(), nullptr, 10);
+    shunt.setChargeEfficiency(chargeEfficiency);
+  } else {
+    logger.warning("Setup already closed, ignoring received charge efficiency");
+  }
+}
+
 void setup() {
   Serial.begin(SERIAL_SPEED);
   logger.info("Starting setup...");
@@ -63,6 +75,8 @@ void setup() {
   currentChar =
       btManager.createReadCharacteristic(shuntService, CURRENT_CHAR_UUID);
   socChar = btManager.createReadCharacteristic(shuntService, SOC_CHAR_UUID);
+  chargeChar = btManager.createReadCharacteristic(shuntService,
+                                                  CHARGE_EFFICIENCY_CHAR_UUID);
   btManager.createWriteCharacteristic(shuntService, MAX_AMP_HOURS_CHAR_UUID,
                                       receivedMaxAmpCallback);
   btManager.createWriteCharacteristic(shuntService, SOC_PERCENT_CHAR_UUID,
@@ -95,6 +109,8 @@ void loop() {
                                       String(shunt.getBusCurrent()).c_str());
   btManager.updateCharacteristicValue(socChar,
                                       String(shunt.getStateOfCharge()).c_str());
+  btManager.updateCharacteristicValue(
+      chargeChar, String(shunt.getChargeEfficiency()).c_str());
 
   // Handle WiFiManager client requests
   wifiPortal.handle();

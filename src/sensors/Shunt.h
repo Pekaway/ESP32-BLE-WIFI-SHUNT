@@ -18,11 +18,13 @@ class Shunt {
   float getBusCurrent();
   float getPower();
   float getStateOfCharge();
+  [[nodiscard]] uint8_t getChargeEfficiency() const;
 
   // Battery capacity management
   void setMaxCapacity(uint32_t ampHours);
   void setCurrentStateOfCharge(uint8_t percentage);
-  uint32_t getMaxCapacity();
+  void setChargeEfficiency(uint8_t percentage);
+  [[nodiscard]] uint32_t getMaxCapacity() const;
 
   // Processing
   void update();
@@ -46,6 +48,7 @@ class Shunt {
   int64_t currentCapacityMilliAmpMs = 0;
   int64_t lastStoredCapacityMilliAmpMs = 0;
   int64_t capacityThresholdToStore = 360000000;
+  uint8_t chargeEfficiency = 100;
 
   unsigned long lastUpdateMillis = 0;
   unsigned long lastStorageMillis = 0;

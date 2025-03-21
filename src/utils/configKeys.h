@@ -15,6 +15,7 @@ enum class ConfigKey {
   MQTT_PASSWORD,
   CURRENT_SOC,
   CURRENT_CAPACITY_MAMS,
+  CHARGE_EFFICIENCY,
 };
 
 class ConfigKeys {
@@ -31,6 +32,7 @@ class ConfigKeys {
         {ConfigKey::MQTT_PASSWORD, "mqtt_password"},
         {ConfigKey::CURRENT_SOC, "current_soc"},
         {ConfigKey::CURRENT_CAPACITY_MAMS, "current_capacity_mams"},
+        {ConfigKey::CHARGE_EFFICIENCY, "charge_efficiency"},
     };
 
     auto const it = keyToStringMap.find(key);

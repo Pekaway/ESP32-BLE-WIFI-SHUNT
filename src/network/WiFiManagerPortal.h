@@ -17,6 +17,7 @@ class WiFiManagerPortal {
   WiFiManagerParameter* custom_soc_percent;
   WiFiManagerParameter* custom_mqtt_user;
   WiFiManagerParameter* custom_mqtt_password;
+  WiFiManagerParameter* custom_charge_efficiency;
 
   Logger logger = Logger(Serial);
 

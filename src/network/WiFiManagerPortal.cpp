@@ -13,6 +13,10 @@ WiFiManagerPortal::WiFiManagerPortal() {
   custom_soc_percent = new WiFiManagerParameter(
       "soc_percent", "Soc Percentage",
       String(config_manager.get<int64_t>(ConfigKey::INITIAL_SOC)).c_str(), 10);
+  custom_charge_efficiency = new WiFiManagerParameter(
+      "charge_efficiency", "Charge Efficiency in %",
+      String(config_manager.get<uint8_t>(ConfigKey::CHARGE_EFFICIENCY)).c_str(),
+      10);
   custom_mqtt_user = new WiFiManagerParameter(
       "mqtt_user", "MQTT user",
       config_manager.get<String>(ConfigKey::MQTT_USER).c_str(), 32,
@@ -35,6 +39,7 @@ void WiFiManagerPortal::setupPortal() {
   wifiManager.addParameter(custom_soc_percent);
   wifiManager.addParameter(custom_mqtt_user);
   wifiManager.addParameter(custom_mqtt_password);
+  wifiManager.addParameter(custom_charge_efficiency);
 
   wifiManager.setConfigPortalBlocking(false);
   wifiManager.setConfigPortalTimeout(60);
@@ -58,9 +63,12 @@ void WiFiManagerPortal::saveParamsCallback() {
       strtoll(custom_max_amp_hours->getValue(), nullptr, 10);
   long long const socPercent =
       strtoll(custom_soc_percent->getValue(), nullptr, 10);
+  uint8_t const chargeEfficiency =
+      strtol(custom_charge_efficiency->getValue(), nullptr, 10);
 
   shunt.setMaxCapacity(maxAmpHours);
   shunt.setCurrentStateOfCharge(socPercent);
+  shunt.setChargeEfficiency(chargeEfficiency);
   logger.info("Shunt values updated from portal");
 
   ConfigManager& config = ConfigManager::getInstance();

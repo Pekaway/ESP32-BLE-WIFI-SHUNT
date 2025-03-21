@@ -15,6 +15,7 @@ bool Shunt::init(uint32_t shuntMicroOhm, uint16_t maximumAmps) {
 
   this->maximumAmps =
       config.get<uint32_t>(ConfigKey::MAXIMUM_AMPS, maximumAmps);
+  this->chargeEfficiency = config.get<uint8_t>(ConfigKey::CHARGE_EFFICIENCY);
 
   deviceCount = ina.begin(this->maximumAmps, this->shuntMicroOhm, 255, 7, 6);
   while (deviceCount == 0) {
@@ -74,7 +75,24 @@ void Shunt::setCurrentStateOfCharge(uint8_t percentage) {
   logger.info(message);
 }
 
-uint32_t Shunt::getMaxCapacity() {
+void Shunt::setChargeEfficiency(uint8_t percentage) {
+  if (percentage > 100) percentage = 100;
+
+  ConfigManager& config = ConfigManager::getInstance();
+  config.set<uint8_t>(ConfigKey::CHARGE_EFFICIENCY, percentage);
+  config.saveConfig();
+
+  this->chargeEfficiency = percentage;
+
+  char message[50];
+  snprintf(message, sizeof(message), "Charge efficiency set to %d%%",
+           percentage);
+  logger.info(message);
+}
+
+uint8_t Shunt::getChargeEfficiency() const { return this->chargeEfficiency; }
+
+uint32_t Shunt::getMaxCapacity() const {
   return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL);
 }
 
@@ -133,12 +151,12 @@ bool Shunt::saveStateToConfig() {
 }
 
 void Shunt::update() {
-  unsigned long currentMillis = millis();
+  auto const currentMillis = millis();
 
   if (lastUpdateMillis > 0) {
     // Calculate consumed or recharged capacity since last update
-    long const elapsedMs = currentMillis - lastUpdateMillis;
-    float const currentAmps = getBusCurrent();
+    auto const elapsedMs = currentMillis - lastUpdateMillis;
+    auto const currentAmps = getBusCurrent() * chargeEfficiency / 100;
     auto const capacityDeltaMilliAmpMs = (currentAmps * 1000 * elapsedMs);
 
     // Update the current capacity
@@ -147,7 +165,7 @@ void Shunt::update() {
   }
 
   ConfigManager& config = ConfigManager::getInstance();
-  uint32_t const autoSaveInterval =
+  auto const autoSaveInterval =
       config.get<uint32_t>(ConfigKey::AUTO_SAVE_INTERVAL, 30) * 1000;
 
   if (currentMillis - lastStorageMillis >= autoSaveInterval) {

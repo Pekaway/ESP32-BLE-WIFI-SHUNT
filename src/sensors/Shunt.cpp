@@ -10,7 +10,7 @@ Shunt::Shunt() {
   logger.prependLog = [] { return "SHUNT"; };
 }
 
-bool Shunt::init(uint32_t shuntMicroOhm, uint16_t maximumAmps) {
+bool Shunt::init(uint16_t const maximumAmps) {
   ConfigManager& config = ConfigManager::getInstance();
 
   this->maximumAmps =

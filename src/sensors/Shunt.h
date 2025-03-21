@@ -11,7 +11,7 @@ class Shunt {
  public:
   static Shunt& getInstance();
 
-  bool init(uint32_t shuntMicroOhm = 375, uint16_t maximumAmps = 1022);
+  bool init(uint16_t maximumAmps = 1022);
 
   // Read current values from the INA sensor
   float getBusVoltage();

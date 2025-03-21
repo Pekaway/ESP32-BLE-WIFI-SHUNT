@@ -39,17 +39,78 @@ void MQTTManager::handle() {
 
 void MQTTManager::publishShuntValues() {
   Shunt& shunt = Shunt::getInstance();
-  auto const voltage = String(shunt.getBusVoltage());
-  auto const current = String(shunt.getBusCurrent());
-  auto const power = String(shunt.getPower());
-  auto const soc = String(shunt.getStateOfCharge());
 
-  client.publish(concatenate(prefix, "shunt/voltage"), voltage.c_str());
-  client.publish(concatenate(prefix, "shunt/current"), current.c_str());
-  client.publish(concatenate(prefix, "shunt/power"), power.c_str());
-  client.publish(concatenate(prefix, "shunt/soc"), soc.c_str());
+  auto const voltage = shunt.getBusVoltage();
+  auto const current = shunt.getBusCurrent();
+  auto const power = shunt.getPower();
+  auto const soc = shunt.getStateOfCharge();
+  auto const chargeEfficiency = shunt.getChargeEfficiency();
+  auto const maxCapacity = shunt.getMaxCapacity();
 
-  logger.info("Published shunt values to MQTT");
+  client.publish((HASS_BASE_TOPIC + "voltage/state").c_str(),
+                 String(voltage).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "current/state").c_str(),
+                 String(current).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "power/state").c_str(),
+                 String(power).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "soc/state").c_str(), String(soc).c_str(),
+                 true);
+  client.publish((HASS_BASE_TOPIC + "charge_efficiency/state").c_str(),
+                 String(chargeEfficiency).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "max_capacity/state").c_str(),
+                 String(maxCapacity).c_str(), true);
+
+  logger.info("Shunt values published to MQTT");
+}
+
+void MQTTManager::registerHomeAssistantSensors() {
+  struct SensorConfig {
+    char const* name;
+    char const* unit;
+    char const* deviceClass;
+    char const* icon;
+  };
+
+  SensorConfig const sensors[] = {
+      {"Voltage", "V", "voltage", "mdi:lightning-bolt"},
+      {"Current", "A", "current", "mdi:current-ac"},
+      {"Power", "W", "power", "mdi:flash"},
+      {"State of Charge", "%", "battery", "mdi:battery"},
+      {"Charge Efficiency", "%", "", "mdi:battery-charging"},
+      {"Maximum Capacity", "Ah", "", "mdi:battery-high"}};
+
+  char const* sensorIds[] = {"voltage", "current",           "power",
+                             "soc",     "charge_efficiency", "max_capacity"};
+
+  for (int i = 0; i < 6; i++) {
+    JsonDocument doc;
+
+    doc["name"] = String("Pekaway Shunt ") + sensors[i].name;
+    doc["state_topic"] = HASS_BASE_TOPIC + sensorIds[i] + "/state";
+    doc["unit_of_measurement"] = sensors[i].unit;
+
+    if (strlen(sensors[i].deviceClass) > 0) {
+      doc["device_class"] = sensors[i].deviceClass;
+    }
+
+    doc["icon"] = sensors[i].icon;
+    doc["unique_id"] = String("pekaway_shunt_") + sensorIds[i];
+
+    auto device = doc["device"].to<JsonObject>();
+    auto identifiers = device["identifiers"].to<JsonArray>();
+    identifiers.add("pekaway_shunt");
+    device["name"] = "Pekaway Battery Shunt";
+    device["manufacturer"] = "Pekaway";
+    device["model"] = "Battery Shunt";
+
+    String configPayload;
+    serializeJson(doc, configPayload);
+
+    client.publish((HASS_BASE_TOPIC + sensorIds[i] + "/config").c_str(),
+                   configPayload.c_str(), true);
+  }
+
+  logger.info("Home Assistant sensor configurations published");
 }
 
 boolean MQTTManager::connect() {

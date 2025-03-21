@@ -60,8 +60,7 @@ void setup() {
   ConfigManager& config = ConfigManager::getInstance();
   config.init();
 
-  Shunt& shunt = Shunt::getInstance();
-  if (!shunt.init(SHUNT_MICRO_OHM, MAXIMUM_AMPS)) {
+  if (Shunt& shunt = Shunt::getInstance(); !shunt.init(MAXIMUM_AMPS)) {
     logger.critical("Failed to initialize Shunt");
     return;
   }

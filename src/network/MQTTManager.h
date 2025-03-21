@@ -13,6 +13,7 @@ class MQTTManager {
   void begin();
   void handle();
   void publishShuntValues();
+  void registerHomeAssistantSensors();
 
  private:
   NetworkClientSecure net = NetworkClientSecure();

@@ -20,6 +20,7 @@ constexpr uint16_t MAXIMUM_AMPS = 1022;
 // MQTT constants
 auto const MQTT_BROKER = "mqttapi-emqx-vanpi.pekaway.de";
 constexpr auto MQTT_PORT = 8883;
+String const HASS_BASE_TOPIC = "homeassistant/sensor/pekaway_shunt/";
 
 // Other constants
 constexpr uint32_t SERIAL_SPEED = 115200;

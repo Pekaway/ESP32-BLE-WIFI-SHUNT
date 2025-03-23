@@ -13,6 +13,8 @@ enum class ConfigKey {
   AUTO_SAVE_INTERVAL,
   MQTT_USER,
   MQTT_PASSWORD,
+  MQTT_SERVER,
+  MQTT_PORT,
   CURRENT_SOC,
   CURRENT_CAPACITY_MAMS,
   CHARGE_EFFICIENCY,
@@ -30,13 +32,14 @@ class ConfigKeys {
         {ConfigKey::AUTO_SAVE_INTERVAL, "auto_save_interval"},
         {ConfigKey::MQTT_USER, "mqtt_user"},
         {ConfigKey::MQTT_PASSWORD, "mqtt_password"},
+        {ConfigKey::MQTT_SERVER, "mqtt_server"},
+        {ConfigKey::MQTT_PORT, "mqtt_port"},
         {ConfigKey::CURRENT_SOC, "current_soc"},
         {ConfigKey::CURRENT_CAPACITY_MAMS, "current_capacity_mams"},
         {ConfigKey::CHARGE_EFFICIENCY, "charge_efficiency"},
     };
 
-    auto const it = keyToStringMap.find(key);
-    if (it != keyToStringMap.end()) {
+    if (auto const it = keyToStringMap.find(key); it != keyToStringMap.end()) {
       return it->second;
     }
     return nullptr;

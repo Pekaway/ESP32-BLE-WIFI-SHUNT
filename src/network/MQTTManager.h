@@ -16,11 +16,9 @@ class MQTTManager {
   void registerHomeAssistantSensors();
 
  private:
-  NetworkClientSecure net = NetworkClientSecure();
+  NetworkClient net = NetworkClient();
   MQTTClient client;
   Logger logger = Logger(Serial);
-
-  char* prefix;
 
   boolean connect();
 };

@@ -83,10 +83,7 @@ void setup() {
 
   btManager.startAdvertising();
 
-  // Start WiFiManager portal
   wifiPortal.begin();
-
-  // Start MQTTManager
   mqttManager.begin();
 
   logger.info("Setup complete");
@@ -111,14 +108,10 @@ void loop() {
   btManager.updateCharacteristicValue(
       chargeChar, String(shunt.getChargeEfficiency()).c_str());
 
-  // Handle WiFiManager client requests
   wifiPortal.handle();
-
-  // Handle MQTT client
   mqttManager.handle();
 
-  // Publish shunt values to MQTT
-  // mqttManager.publishShuntValues();
+  mqttManager.publishShuntValues();
 
-  delay(100);
+  delay(1000);
 }

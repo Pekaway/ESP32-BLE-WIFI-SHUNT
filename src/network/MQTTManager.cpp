@@ -1,32 +1,24 @@
 #include "MQTTManager.h"
 #include <utils/ConfigManager.h>
-#include <utils/Utils.h>
 #include <WiFi.h>
 
-MQTTManager::MQTTManager() : client(256), prefix() {}
+MQTTManager::MQTTManager() : client(256) {}
 
 void MQTTManager::begin() {
-  net.setInsecure();
+  ConfigManager& config = ConfigManager::getInstance();
 
-  prefix = const_cast<char*>(
-      ConfigManager::getInstance().get<String>(ConfigKey::MQTT_USER).c_str());
+  auto const server = config.get<String>(ConfigKey::MQTT_SERVER);
+  auto const port = config.get<uint16_t>(ConfigKey::MQTT_PORT);
 
-  client.begin(MQTT_BROKER, MQTT_PORT, net);
+  client.begin(server.c_str(), port, net);
   client.onMessage([this](String const& topic, String const& payload) {
     logger.info(
         ("Received message on topic: " + topic + " - " + payload).c_str());
   });
 
-  client.setWill(concatenate(prefix, "shunt/status"), "offline", true, 1);
+  client.setWill("shunt/status", "offline", true, 1);
 
   connect();
-
-  if (client.connected()) {
-    client.publish(concatenate(prefix, "shunt/status"), "online", true, 1);
-    logger.info("Connected to MQTT broker");
-  } else {
-    logger.critical("Failed to connect to MQTT broker");
-  }
 }
 
 void MQTTManager::handle() {
@@ -107,7 +99,7 @@ void MQTTManager::registerHomeAssistantSensors() {
     serializeJson(doc, configPayload);
 
     client.publish((HASS_BASE_TOPIC + sensorIds[i] + "/config").c_str(),
-                   configPayload.c_str(), true);
+                   configPayload.c_str());
   }
 
   logger.info("Home Assistant sensor configurations published");
@@ -122,16 +114,27 @@ boolean MQTTManager::connect() {
   logger.info("Connecting to MQTT broker...");
 
   ConfigManager& config = ConfigManager::getInstance();
+  auto const server = config.get<String>(ConfigKey::MQTT_SERVER);
+  auto const port = config.get<uint16_t>(ConfigKey::MQTT_PORT);
   auto const username = config.get<String>(ConfigKey::MQTT_USER);
   auto const password = config.get<String>(ConfigKey::MQTT_PASSWORD);
-  prefix = const_cast<char*>(username.c_str());
+
+  char logMessage[128];
+  snprintf(
+      logMessage, sizeof(logMessage),
+      "Connecting to MQTT broker at %s:%d with username '%s' and password '%s'",
+      server.c_str(), port, username.c_str(), password.c_str());
+  logger.info(logMessage);
 
   auto const connected =
       client.connect("shuntClient", username.c_str(), password.c_str());
 
   if (connected) {
-    client.publish(concatenate(prefix, "shunt/status"), "online", true, 1);
+    client.publish("shunt/status", "online", true, 1);
     logger.info("Connected to MQTT broker");
+
+    registerHomeAssistantSensors();
+
     return true;
   }
   logger.critical("Failed to connect to MQTT broker!");

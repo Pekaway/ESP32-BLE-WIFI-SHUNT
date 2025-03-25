@@ -47,11 +47,9 @@ void BluetoothManager::startAdvertising() {
   }
 }
 
-BLECharacteristic* BluetoothManager::createReadCharacteristic(
-    char const* charUUID) {
+BLECharacteristic* BluetoothManager::createReadCharacteristic(char const* charUUID) {
   if (service) {
-    BLECharacteristic* characteristic = service->createCharacteristic(
-        charUUID, BLECharacteristic::PROPERTY_READ);
+    BLECharacteristic* characteristic = service->createCharacteristic(charUUID, BLECharacteristic::PROPERTY_READ);
 
     String message = "Read characteristic created with UUID: ";
     message += charUUID;
@@ -63,12 +61,10 @@ BLECharacteristic* BluetoothManager::createReadCharacteristic(
   return nullptr;
 }
 
-BLECharacteristic* BluetoothManager::createNotifyCharacteristic(
-    char const* charUUID) {
+BLECharacteristic* BluetoothManager::createNotifyCharacteristic(char const* charUUID) {
   if (service) {
-    BLECharacteristic* characteristic = service->createCharacteristic(
-        charUUID,
-        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
+    BLECharacteristic* characteristic =
+        service->createCharacteristic(charUUID, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
     characteristic->addDescriptor(new BLE2902());
 
     String message = "Notify characteristic created with UUID: ";
@@ -81,13 +77,11 @@ BLECharacteristic* BluetoothManager::createNotifyCharacteristic(
   return nullptr;
 }
 
-BLECharacteristic* BluetoothManager::createWriteCharacteristic(
-    char const* charUUID, std::function<void(String const&)> callback) {
+BLECharacteristic* BluetoothManager::createWriteCharacteristic(char const* charUUID,
+                                                               std::function<void(String const&)> callback) {
   if (service) {
-    BLECharacteristic* characteristic = service->createCharacteristic(
-        charUUID, BLECharacteristic::PROPERTY_WRITE);
-    characteristic->setCallbacks(
-        new CharacteristicCallbacks(std::move(callback)));
+    BLECharacteristic* characteristic = service->createCharacteristic(charUUID, BLECharacteristic::PROPERTY_WRITE);
+    characteristic->setCallbacks(new CharacteristicCallbacks(std::move(callback)));
 
     String message = "Write characteristic created with UUID: ";
     message += charUUID;
@@ -112,8 +106,7 @@ void BluetoothManager::ServerCallbacks::onDisconnect(BLEServer* pServer) {
   pServer->startAdvertising();
 }
 
-void BluetoothManager::CharacteristicCallbacks::onWrite(
-    BLECharacteristic* pCharacteristic) {
+void BluetoothManager::CharacteristicCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
   String const value = pCharacteristic->getValue();
   if (callback) {
     callback(value);

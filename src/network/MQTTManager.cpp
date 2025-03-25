@@ -19,8 +19,7 @@ void MQTTManager::begin() {
 
   client.begin(server.c_str(), port, net);
   client.onMessage([this](String const& topic, String const& payload) {
-    logger.info(
-        ("Received message on topic: " + topic + " - " + payload).c_str());
+    logger.info(("Received message on topic: " + topic + " - " + payload).c_str());
   });
 
   client.setWill("shunt/status", "offline", true, 1);
@@ -46,18 +45,12 @@ void MQTTManager::publishShuntValues() {
   auto const chargeEfficiency = shunt.getChargeEfficiency();
   auto const maxCapacity = shunt.getMaxCapacity();
 
-  client.publish((HASS_BASE_TOPIC + "voltage/state").c_str(),
-                 String(voltage).c_str(), true);
-  client.publish((HASS_BASE_TOPIC + "current/state").c_str(),
-                 String(current).c_str(), true);
-  client.publish((HASS_BASE_TOPIC + "power/state").c_str(),
-                 String(power).c_str(), true);
-  client.publish((HASS_BASE_TOPIC + "soc/state").c_str(), String(soc).c_str(),
-                 true);
-  client.publish((HASS_BASE_TOPIC + "charge_efficiency/state").c_str(),
-                 String(chargeEfficiency).c_str(), true);
-  client.publish((HASS_BASE_TOPIC + "max_capacity/state").c_str(),
-                 String(maxCapacity).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "voltage/state").c_str(), String(voltage).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "current/state").c_str(), String(current).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "power/state").c_str(), String(power).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "soc/state").c_str(), String(soc).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "charge_efficiency/state").c_str(), String(chargeEfficiency).c_str(), true);
+  client.publish((HASS_BASE_TOPIC + "max_capacity/state").c_str(), String(maxCapacity).c_str(), true);
 
   logger.info("Shunt values published to MQTT");
 }
@@ -70,16 +63,14 @@ void MQTTManager::registerHomeAssistantSensors() {
     char const* icon;
   };
 
-  SensorConfig const sensors[] = {
-      {"Voltage", "V", "voltage", "mdi:lightning-bolt"},
-      {"Current", "A", "current", "mdi:current-ac"},
-      {"Power", "W", "power", "mdi:flash"},
-      {"State of Charge", "%", "battery", "mdi:battery"},
-      {"Charge Efficiency", "%", "", "mdi:battery-charging"},
-      {"Maximum Capacity", "Ah", "", "mdi:battery-high"}};
+  SensorConfig const sensors[] = {{"Voltage", "V", "voltage", "mdi:lightning-bolt"},
+                                  {"Current", "A", "current", "mdi:current-ac"},
+                                  {"Power", "W", "power", "mdi:flash"},
+                                  {"State of Charge", "%", "battery", "mdi:battery"},
+                                  {"Charge Efficiency", "%", "", "mdi:battery-charging"},
+                                  {"Maximum Capacity", "Ah", "", "mdi:battery-high"}};
 
-  char const* sensorIds[] = {"voltage", "current",           "power",
-                             "soc",     "charge_efficiency", "max_capacity"};
+  char const* sensorIds[] = {"voltage", "current", "power", "soc", "charge_efficiency", "max_capacity"};
 
   for (int i = 0; i < 6; i++) {
     JsonDocument doc;
@@ -105,8 +96,7 @@ void MQTTManager::registerHomeAssistantSensors() {
     String configPayload;
     serializeJson(doc, configPayload);
 
-    client.publish((HASS_BASE_TOPIC + sensorIds[i] + "/config").c_str(),
-                   configPayload.c_str());
+    client.publish((HASS_BASE_TOPIC + sensorIds[i] + "/config").c_str(), configPayload.c_str());
   }
 
   logger.info("Home Assistant sensor configurations published");
@@ -127,14 +117,11 @@ boolean MQTTManager::connect() {
   auto const password = config.get<String>(ConfigKey::MQTT_PASSWORD);
 
   char logMessage[128];
-  snprintf(
-      logMessage, sizeof(logMessage),
-      "Connecting to MQTT broker at %s:%d with username '%s' and password '%s'",
-      server.c_str(), port, username.c_str(), password.c_str());
+  snprintf(logMessage, sizeof(logMessage), "Connecting to MQTT broker at %s:%d with username '%s' and password '%s'",
+           server.c_str(), port, username.c_str(), password.c_str());
   logger.info(logMessage);
 
-  auto const connected =
-      client.connect("shuntClient", username.c_str(), password.c_str());
+  auto const connected = client.connect("shuntClient", username.c_str(), password.c_str());
 
   if (connected) {
     client.publish("shunt/status", "online", true, 1);

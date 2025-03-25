@@ -24,8 +24,7 @@ class BluetoothManager {
 
   BLECharacteristic* createReadCharacteristic(char const* charUUID);
   BLECharacteristic* createNotifyCharacteristic(char const* charUUID);
-  BLECharacteristic* createWriteCharacteristic(
-      char const* charUUID, std::function<void(String const&)> callback);
+  BLECharacteristic* createWriteCharacteristic(char const* charUUID, std::function<void(String const&)> callback);
 
  private:
   BluetoothManager();
@@ -33,8 +32,8 @@ class BluetoothManager {
 
   Logger logger = Logger(Serial);
 
-  BLEServer* pServer;
-  BLEService* service;
+  BLEServer* pServer = nullptr;
+  BLEService* service = nullptr;
   bool deviceConnected = false;
 
   class ServerCallbacks final : public BLEServerCallbacks {
@@ -50,8 +49,7 @@ class BluetoothManager {
     std::function<void(String const&)> callback;
 
    public:
-    explicit CharacteristicCallbacks(std::function<void(String const&)> cb)
-        : callback(std::move(cb)) {}
+    explicit CharacteristicCallbacks(std::function<void(String const&)> cb) : callback(std::move(cb)) {}
     void onWrite(BLECharacteristic* pCharacteristic) override;
   };
 };

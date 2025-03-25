@@ -13,8 +13,7 @@ Shunt::Shunt() {
 bool Shunt::init(uint16_t const maximumAmps) {
   ConfigManager& config = ConfigManager::getInstance();
 
-  this->maximumAmps =
-      config.get<uint32_t>(ConfigKey::MAXIMUM_AMPS, maximumAmps);
+  this->maximumAmps = config.get<uint32_t>(ConfigKey::MAXIMUM_AMPS, maximumAmps);
   this->chargeEfficiency = config.get<uint8_t>(ConfigKey::CHARGE_EFFICIENCY);
 
   deviceCount = ina.begin(this->maximumAmps, this->shuntMicroOhm, 255, 7, 6);
@@ -25,8 +24,7 @@ bool Shunt::init(uint16_t const maximumAmps) {
   }
 
   char message[50];
-  snprintf(message, sizeof(message), "Detected %d INA devices on the I2C bus",
-           deviceCount);
+  snprintf(message, sizeof(message), "Detected %d INA devices on the I2C bus", deviceCount);
   logger.info(message);
 
   ina.setBusConversion(8500);
@@ -85,40 +83,32 @@ void Shunt::setChargeEfficiency(uint8_t percentage) {
   this->chargeEfficiency = percentage;
 
   char message[50];
-  snprintf(message, sizeof(message), "Charge efficiency set to %d%%",
-           percentage);
+  snprintf(message, sizeof(message), "Charge efficiency set to %d%%", percentage);
   logger.info(message);
 }
 
 uint8_t Shunt::getChargeEfficiency() const { return this->chargeEfficiency; }
 
-uint32_t Shunt::getMaxCapacity() const {
-  return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL);
-}
+uint32_t Shunt::getMaxCapacity() const { return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL); }
 
 bool Shunt::loadConfig() {
   ConfigManager& config = ConfigManager::getInstance();
 
-  uint32_t maxCapacity =
-      config.get<int>(ConfigKey::MAXIMUM_AMPS, 100);  // Default 100Ah
-  maxCapacityMilliAmpMs =
-      static_cast<int64_t>(maxCapacity) * 60LL * 60LL * 1000LL * 1000LL;
+  uint32_t maxCapacity = config.get<int>(ConfigKey::MAXIMUM_AMPS, 100);  // Default 100Ah
+  maxCapacityMilliAmpMs = static_cast<int64_t>(maxCapacity) * 60LL * 60LL * 1000LL * 1000LL;
 
-  int socPercentage = config.get<int>(
-      ConfigKey::CURRENT_SOC, config.get<int>(ConfigKey::INITIAL_SOC, 80));
+  int socPercentage = config.get<int>(ConfigKey::CURRENT_SOC, config.get<int>(ConfigKey::INITIAL_SOC, 80));
   currentCapacityMilliAmpMs = (maxCapacityMilliAmpMs / 100) * socPercentage;
 
   if (config.hasKey(ConfigKey::CURRENT_CAPACITY_MAMS)) {
-    auto const capacityStr =
-        config.get<char const*>(ConfigKey::CURRENT_CAPACITY_MAMS, "0");
+    auto const capacityStr = config.get<char const*>(ConfigKey::CURRENT_CAPACITY_MAMS, "0");
     currentCapacityMilliAmpMs = strtoll(capacityStr, nullptr, 10);
   }
 
   lastStoredCapacityMilliAmpMs = currentCapacityMilliAmpMs;
 
   char message[100];
-  snprintf(message, sizeof(message), "Loaded max capacity: %d Ah, SOC: %d%%",
-           maxCapacity, socPercentage);
+  snprintf(message, sizeof(message), "Loaded max capacity: %d Ah, SOC: %d%%", maxCapacity, socPercentage);
   logger.info(message);
 
   return true;
@@ -139,8 +129,8 @@ bool Shunt::saveStateToConfig() {
 
   if (result) {
     char message[100];
-    snprintf(message, sizeof(message), "Stored SOC: %d%%, capacity: %lld mA-ms",
-             socPercentage, currentCapacityMilliAmpMs);
+    snprintf(message, sizeof(message), "Stored SOC: %d%%, capacity: %lld mA-ms", socPercentage,
+             currentCapacityMilliAmpMs);
 
     logger.info(message);
   } else {
@@ -165,14 +155,12 @@ void Shunt::update() {
   }
 
   ConfigManager& config = ConfigManager::getInstance();
-  auto const autoSaveInterval =
-      config.get<uint32_t>(ConfigKey::AUTO_SAVE_INTERVAL, 30) * 1000;
+  auto const autoSaveInterval = config.get<uint32_t>(ConfigKey::AUTO_SAVE_INTERVAL, 30) * 1000;
 
   if (currentMillis - lastStorageMillis >= autoSaveInterval) {
     lastStorageMillis = currentMillis;
 
-    int64_t capacityChange =
-        lastStoredCapacityMilliAmpMs - currentCapacityMilliAmpMs;
+    int64_t capacityChange = lastStoredCapacityMilliAmpMs - currentCapacityMilliAmpMs;
     if (capacityChange < 0) capacityChange = -capacityChange;
 
     if (capacityChange > capacityThresholdToStore) {
@@ -187,9 +175,7 @@ void Shunt::update() {
 float Shunt::calculateStateOfCharge() {
   if (maxCapacityMilliAmpMs <= 0) return 0;
 
-  return (static_cast<float>(currentCapacityMilliAmpMs) /
-          static_cast<float>(maxCapacityMilliAmpMs)) *
-         100.0f;
+  return (static_cast<float>(currentCapacityMilliAmpMs) / static_cast<float>(maxCapacityMilliAmpMs)) * 100.0f;
 }
 
 void Shunt::clampStateOfCharge() {

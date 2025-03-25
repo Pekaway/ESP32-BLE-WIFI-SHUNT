@@ -53,6 +53,18 @@ void setup() {
       CHARGE_EFFICIENCY_CHAR_UUID, [](String const& value) {
         callbackHandler.handleChargeEfficiency(value);
       });
+  btManager.createWriteCharacteristic(
+      MQTT_USER_CHAR_UUID,
+      [](String const& value) { callbackHandler.handleMQTTUser(value); });
+  btManager.createWriteCharacteristic(
+      MQTT_PASSWORD_CHAR_UUID,
+      [](String const& value) { callbackHandler.handleMQTTPassword(value); });
+  btManager.createWriteCharacteristic(
+      MQTT_SERVER_CHAR_UUID,
+      [](String const& value) { callbackHandler.handleMQTTServer(value); });
+  btManager.createWriteCharacteristic(
+      MQTT_PORT_CHAR_UUID,
+      [](String const& value) { callbackHandler.handleMQTTPort(value); });
 
   btManager.startAdvertising();
 

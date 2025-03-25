@@ -19,6 +19,11 @@ class CallbackHandler {
   void handleSOCPercent(String const& value);
   void handleChargeEfficiency(String const& value);
 
+  void handleMQTTUser(String const& value);
+  void handleMQTTPassword(String const& value);
+  void handleMQTTServer(String const& value);
+  void handleMQTTPort(String const& value);
+
  private:
   CallbackHandler();
   ~CallbackHandler() = default;

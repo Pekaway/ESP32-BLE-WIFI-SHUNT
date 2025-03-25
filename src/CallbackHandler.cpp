@@ -1,5 +1,6 @@
 #include "CallbackHandler.h"
 #include "sensors/Shunt.h"
+#include <utils/ConfigManager.h>
 
 CallbackHandler& CallbackHandler::getInstance() {
   static CallbackHandler instance;
@@ -51,5 +52,42 @@ void CallbackHandler::handleChargeEfficiency(String const& value) {
     Shunt& shunt = Shunt::getInstance();
     uint8_t const chargeEfficiency = strtol(value.c_str(), nullptr, 10);
     shunt.setChargeEfficiency(chargeEfficiency);
+  }
+}
+
+void CallbackHandler::handleMQTTUser(String const& value) {
+  logger.info(("Received MQTT User: " + value).c_str());
+  if (isAllowed()) {
+    ConfigManager& config = ConfigManager::getInstance();
+    config.set<String>(ConfigKey::MQTT_USER, value);
+    logger.info("MQTT User updated");
+  }
+}
+
+void CallbackHandler::handleMQTTPassword(String const& value) {
+  logger.info("Received MQTT Password");
+  if (isAllowed()) {
+    ConfigManager& config = ConfigManager::getInstance();
+    config.set<String>(ConfigKey::MQTT_PASSWORD, value);
+    logger.info("MQTT Password updated");
+  }
+}
+
+void CallbackHandler::handleMQTTServer(String const& value) {
+  logger.info(("Received MQTT Server: " + value).c_str());
+  if (isAllowed()) {
+    ConfigManager& config = ConfigManager::getInstance();
+    config.set<String>(ConfigKey::MQTT_SERVER, value);
+    logger.info("MQTT Server updated");
+  }
+}
+
+void CallbackHandler::handleMQTTPort(String const& value) {
+  logger.info(("Received MQTT Port: " + value).c_str());
+  if (isAllowed()) {
+    ConfigManager& config = ConfigManager::getInstance();
+    uint16_t const port = strtol(value.c_str(), nullptr, 10);
+    config.set<uint16_t>(ConfigKey::MQTT_PORT, port);
+    logger.info("MQTT Port updated");
   }
 }

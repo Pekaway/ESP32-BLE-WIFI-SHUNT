@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <string>
+#include <utility>
 #include <BLE2902.h>
 #include <BLEDevice.h>
 #include <BLEServer.h>
@@ -13,27 +14,20 @@ class BluetoothManager {
  public:
   static BluetoothManager& getInstance();
 
-  void init(char const* serverName);
+  void init(char const* serverName, char const* serviceUUID);
 
   void startAdvertising();
 
-  BLEService* createService(char const* serviceUUID);
+  void handle();
 
-  BLECharacteristic* createReadCharacteristic(BLEService* service,
-                                              char const* charUUID);
+  BLECharacteristic* createReadCharacteristic(char const* charUUID);
 
-  // Added for notify capabilities
-  BLECharacteristic* createNotifyCharacteristic(BLEService* service,
-                                                char const* charUUID);
+  BLECharacteristic* createNotifyCharacteristic(char const* charUUID);
 
   BLECharacteristic* createWriteCharacteristic(
-      BLEService* service, char const* charUUID,
-      std::function<void(String const&)> callback);
+      char const* charUUID, std::function<void(String const&)> callback);
 
-  void updateCharacteristicValue(BLECharacteristic* characteristic,
-                                 char const* value);
-
-  bool isConnected() const;
+  [[nodiscard]] bool isConnected() const;
 
  private:
   Logger logger = Logger(Serial);
@@ -44,13 +38,14 @@ class BluetoothManager {
   BluetoothManager& operator=(BluetoothManager const&) = delete;
 
   BLEServer* pServer = nullptr;
+  BLEService* service = nullptr;
   bool deviceConnected = false;
 
   class ServerCallbacks final : public BLEServerCallbacks {
     BluetoothManager* manager;
 
    public:
-    ServerCallbacks(BluetoothManager* mgr) : manager(mgr) {}
+    explicit ServerCallbacks(BluetoothManager* mgr) : manager(mgr) {}
     void onConnect(BLEServer* pServer) override;
     void onDisconnect(BLEServer* pServer) override;
   };
@@ -59,8 +54,8 @@ class BluetoothManager {
     std::function<void(String const&)> callback;
 
    public:
-    CharacteristicCallbacks(std::function<void(String const&)> cb)
-        : callback(cb) {}
+    explicit CharacteristicCallbacks(std::function<void(String const&)> cb)
+        : callback(std::move(cb)) {}
     void onWrite(BLECharacteristic* pCharacteristic) override;
   };
 };

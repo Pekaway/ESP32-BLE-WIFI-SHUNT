@@ -20,7 +20,7 @@ BLECharacteristic* chargeChar;
 bool setupAllowed = true;
 unsigned long startUpTime = millis();
 
-void receivedMaxAmpCallback(String value) {
+void receivedMaxAmpCallback(String const& value) {
   logger.info(("Received Max Amp: " + value).c_str());
   if (setupAllowed) {
     Shunt& shunt = Shunt::getInstance();
@@ -31,7 +31,7 @@ void receivedMaxAmpCallback(String value) {
   }
 }
 
-void receivedSOCPercent(String value) {
+void receivedSOCPercent(String const& value) {
   logger.info(("Received SOC percent: " + value).c_str());
   if (setupAllowed) {
     Shunt& shunt = Shunt::getInstance();
@@ -42,7 +42,7 @@ void receivedSOCPercent(String value) {
   }
 }
 
-void receivedChargeEfficiency(String value) {
+void receivedChargeEfficiency(String const& value) {
   logger.info(("Received Charge Efficiency: " + value).c_str());
   if (setupAllowed) {
     Shunt& shunt = Shunt::getInstance();
@@ -65,21 +65,20 @@ void setup() {
     return;
   }
 
-  btManager.init(BLE_SERVER_NAME);
-  BLEService* shuntService = btManager.createService(SERVICE_UUID);
+  btManager.init(BLE_SERVER_NAME, SERVICE_UUID);
 
   // Initialize BLE characteristics
-  voltageChar =
-      btManager.createReadCharacteristic(shuntService, VOLTAGE_CHAR_UUID);
-  currentChar =
-      btManager.createReadCharacteristic(shuntService, CURRENT_CHAR_UUID);
-  socChar = btManager.createReadCharacteristic(shuntService, SOC_CHAR_UUID);
-  chargeChar = btManager.createReadCharacteristic(shuntService,
-                                                  CHARGE_EFFICIENCY_CHAR_UUID);
-  btManager.createWriteCharacteristic(shuntService, MAX_AMP_HOURS_CHAR_UUID,
+  voltageChar = btManager.createReadCharacteristic(VOLTAGE_CHAR_UUID);
+  currentChar = btManager.createReadCharacteristic(CURRENT_CHAR_UUID);
+  socChar = btManager.createReadCharacteristic(SOC_CHAR_UUID);
+  chargeChar = btManager.createReadCharacteristic(CHARGE_EFFICIENCY_CHAR_UUID);
+
+  btManager.createWriteCharacteristic(MAX_AMP_HOURS_CHAR_UUID,
                                       receivedMaxAmpCallback);
-  btManager.createWriteCharacteristic(shuntService, SOC_PERCENT_CHAR_UUID,
+  btManager.createWriteCharacteristic(SOC_PERCENT_CHAR_UUID,
                                       receivedSOCPercent);
+  btManager.createWriteCharacteristic(CHARGE_EFFICIENCY_CHAR_UUID,
+                                      receivedChargeEfficiency);
 
   btManager.startAdvertising();
 
@@ -99,17 +98,14 @@ void loop() {
   shunt.update();
 
   // Update BLE characteristics
-  btManager.updateCharacteristicValue(voltageChar,
-                                      String(shunt.getBusVoltage()).c_str());
-  btManager.updateCharacteristicValue(currentChar,
-                                      String(shunt.getBusCurrent()).c_str());
-  btManager.updateCharacteristicValue(socChar,
-                                      String(shunt.getStateOfCharge()).c_str());
-  btManager.updateCharacteristicValue(
-      chargeChar, String(shunt.getChargeEfficiency()).c_str());
+  voltageChar->setValue(String(shunt.getBusVoltage()).c_str());
+  currentChar->setValue(String(shunt.getBusCurrent()).c_str());
+  socChar->setValue(String(shunt.getStateOfCharge()).c_str());
+  chargeChar->setValue(String(shunt.getChargeEfficiency()).c_str());
 
   wifiPortal.handle();
   mqttManager.handle();
+  btManager.handle();
 
   mqttManager.publishShuntValues();
 

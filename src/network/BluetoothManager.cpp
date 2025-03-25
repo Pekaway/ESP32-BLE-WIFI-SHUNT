@@ -1,4 +1,5 @@
 #include "BluetoothManager.h"
+#include <utility>
 #include <Arduino.h>
 
 BluetoothManager& BluetoothManager::getInstance() {
@@ -6,43 +7,46 @@ BluetoothManager& BluetoothManager::getInstance() {
   return instance;
 }
 
-void BluetoothManager::init(char const* serverName) {
+void BluetoothManager::init(char const* serverName, char const* serviceUUID) {
+  logger.prependLog = [] { return "BLE"; };
+
   BLEDevice::init(serverName);
+
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new ServerCallbacks(this));
 
-  logger.prependLog = [] { return "BLE"; };
+  service = pServer->createService(serviceUUID);
 
   String message = "Server initialized as: ";
   message += serverName;
   logger.info(message.c_str());
 }
 
+void BluetoothManager::handle() {
+  if (pServer) {
+    auto const connectedCount = pServer->getConnectedCount();
+
+    String message = "Connected devices: ";
+    message += connectedCount;
+    logger.info(message.c_str());
+  } else {
+    logger.critical("Server not initialized");
+  }
+}
+
 void BluetoothManager::startAdvertising() {
   if (pServer) {
     pServer->getAdvertising()->start();
+    service->start();
+
     logger.info("Advertising started.");
   } else {
     logger.critical("Server not initialized");
   }
 }
 
-BLEService* BluetoothManager::createService(char const* serviceUUID) {
-  if (pServer) {
-    BLEService* service = pServer->createService(serviceUUID);
-
-    String message = "Service created with UUID: ";
-    message += serviceUUID;
-    logger.info(message.c_str());
-
-    return service;
-  }
-  logger.critical("Server not initialized");
-  return nullptr;
-}
-
 BLECharacteristic* BluetoothManager::createReadCharacteristic(
-    BLEService* service, char const* charUUID) {
+    char const* charUUID) {
   if (service) {
     BLECharacteristic* characteristic = service->createCharacteristic(
         charUUID, BLECharacteristic::PROPERTY_READ);
@@ -58,7 +62,7 @@ BLECharacteristic* BluetoothManager::createReadCharacteristic(
 }
 
 BLECharacteristic* BluetoothManager::createNotifyCharacteristic(
-    BLEService* service, char const* charUUID) {
+    char const* charUUID) {
   if (service) {
     BLECharacteristic* characteristic = service->createCharacteristic(
         charUUID,
@@ -76,12 +80,12 @@ BLECharacteristic* BluetoothManager::createNotifyCharacteristic(
 }
 
 BLECharacteristic* BluetoothManager::createWriteCharacteristic(
-    BLEService* service, char const* charUUID,
-    std::function<void(String const&)> callback) {
+    char const* charUUID, std::function<void(String const&)> callback) {
   if (service) {
     BLECharacteristic* characteristic = service->createCharacteristic(
         charUUID, BLECharacteristic::PROPERTY_WRITE);
-    characteristic->setCallbacks(new CharacteristicCallbacks(callback));
+    characteristic->setCallbacks(
+        new CharacteristicCallbacks(std::move(callback)));
 
     String message = "Write characteristic created with UUID: ";
     message += charUUID;
@@ -91,15 +95,6 @@ BLECharacteristic* BluetoothManager::createWriteCharacteristic(
   }
   logger.critical("Service is null");
   return nullptr;
-}
-
-void BluetoothManager::updateCharacteristicValue(
-    BLECharacteristic* characteristic, char const* value) {
-  if (characteristic) {
-    characteristic->setValue(value);
-  } else {
-    logger.critical("Characteristic is null");
-  }
 }
 
 bool BluetoothManager::isConnected() const { return deviceConnected; }

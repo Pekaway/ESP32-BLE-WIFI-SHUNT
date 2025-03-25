@@ -78,7 +78,7 @@ String* ConfigManager::getKeys(int& count) {
 }
 
 bool ConfigManager::writeConfigFile() {
-  File file = LittleFS.open(configFilePath, "w");
+  File file = LittleFS.open(CONFIG_FILE_PATH, "w");
   if (!file) {
     logger.info("Failed to open config file for writing");
     return false;
@@ -96,12 +96,12 @@ bool ConfigManager::writeConfigFile() {
 }
 
 bool ConfigManager::readConfigFile() {
-  if (!LittleFS.exists(configFilePath)) {
+  if (!LittleFS.exists(CONFIG_FILE_PATH)) {
     logger.info("Config file doesn't exist");
     return false;
   }
 
-  File file = LittleFS.open(configFilePath, "r");
+  File file = LittleFS.open(CONFIG_FILE_PATH, "r");
   if (!file) {
     logger.info("Failed to open config file for reading");
     return false;

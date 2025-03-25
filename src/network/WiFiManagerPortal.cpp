@@ -1,7 +1,14 @@
 #include "WiFiManagerPortal.h"
 #include <utils/ConfigManager.h>
 
+WiFiManagerPortal& WiFiManagerPortal::getInstance() {
+  static WiFiManagerPortal instance;
+  return instance;
+}
+
 WiFiManagerPortal::WiFiManagerPortal() {
+  logger.prependLog = [] { return "WIFI"; };
+
   wifiManager.setSaveConfigCallback([this]() { saveConfigCallback(); });
   wifiManager.setSaveParamsCallback([this]() { saveParamsCallback(); });
 

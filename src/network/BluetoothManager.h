@@ -14,31 +14,27 @@ class BluetoothManager {
  public:
   static BluetoothManager& getInstance();
 
-  void init(char const* serverName, char const* serviceUUID);
-
-  void startAdvertising();
-
-  void handle();
-
-  BLECharacteristic* createReadCharacteristic(char const* charUUID);
-
-  BLECharacteristic* createNotifyCharacteristic(char const* charUUID);
-
-  BLECharacteristic* createWriteCharacteristic(
-      char const* charUUID, std::function<void(String const&)> callback);
-
-  [[nodiscard]] bool isConnected() const;
-
- private:
-  Logger logger = Logger(Serial);
-
-  BluetoothManager() = default;
-  ~BluetoothManager() = default;
   BluetoothManager(BluetoothManager const&) = delete;
   BluetoothManager& operator=(BluetoothManager const&) = delete;
 
-  BLEServer* pServer = nullptr;
-  BLEService* service = nullptr;
+  void init(char const* serverName, char const* serviceUUID);
+  void startAdvertising();
+  void handle();
+  [[nodiscard]] bool isConnected() const;
+
+  BLECharacteristic* createReadCharacteristic(char const* charUUID);
+  BLECharacteristic* createNotifyCharacteristic(char const* charUUID);
+  BLECharacteristic* createWriteCharacteristic(
+      char const* charUUID, std::function<void(String const&)> callback);
+
+ private:
+  BluetoothManager();
+  ~BluetoothManager() = default;
+
+  Logger logger = Logger(Serial);
+
+  BLEServer* pServer;
+  BLEService* service;
   bool deviceConnected = false;
 
   class ServerCallbacks final : public BLEServerCallbacks {

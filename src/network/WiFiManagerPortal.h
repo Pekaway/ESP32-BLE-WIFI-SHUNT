@@ -7,11 +7,20 @@
 
 class WiFiManagerPortal {
  public:
-  WiFiManagerPortal();
+  WiFiManagerPortal(WiFiManagerPortal const&) = delete;
+  WiFiManagerPortal& operator=(WiFiManagerPortal const&) = delete;
+
+  static WiFiManagerPortal& getInstance();
+
   void begin();
   void handle();
 
  private:
+  WiFiManagerPortal();
+  ~WiFiManagerPortal() = default;
+
+  Logger logger = Logger(Serial);
+
   WiFiManager wifiManager;
   WiFiManagerParameter* custom_max_amp_hours;
   WiFiManagerParameter* custom_soc_percent;
@@ -20,8 +29,6 @@ class WiFiManagerPortal {
   WiFiManagerParameter* custom_mqtt_user;
   WiFiManagerParameter* custom_mqtt_password;
   WiFiManagerParameter* custom_charge_efficiency;
-
-  Logger logger = Logger(Serial);
 
   void setupPortal();
   void saveConfigCallback();

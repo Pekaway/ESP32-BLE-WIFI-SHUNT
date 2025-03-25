@@ -7,10 +7,11 @@
 #include <Arduino.h>
 #include <Logger.h>
 
-BluetoothManager& btManager = BluetoothManager::getInstance();
 Logger logger(Serial);
-WiFiManagerPortal wifiPortal;
-MQTTManager mqttManager;
+
+BluetoothManager& btManager = BluetoothManager::getInstance();
+MQTTManager& mqttManager = MQTTManager::getInstance();
+WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
 
 BLECharacteristic* voltageChar;
 BLECharacteristic* currentChar;

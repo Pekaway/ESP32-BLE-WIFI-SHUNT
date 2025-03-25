@@ -6,12 +6,19 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include <Logger.h>
-
 class ConfigManager {
  public:
+  ConfigManager(ConfigManager const&) = delete;
+  ConfigManager& operator=(ConfigManager const&) = delete;
+
   static ConfigManager& getInstance();
 
   bool init();
+  bool saveConfig();
+  bool loadConfig();
+  bool resetToDefaults();
+  bool hasKey(ConfigKey key);
+  String* getKeys(int& count);
 
   template <typename T>
   T get(ConfigKey key, T defaultValue = T()) {
@@ -30,26 +37,15 @@ class ConfigManager {
     return true;
   }
 
-  bool saveConfig();
-  bool loadConfig();
-
-  bool resetToDefaults();
-
-  bool hasKey(ConfigKey key);
-  String* getKeys(int& count);
-
  private:
   ConfigManager();
   ~ConfigManager();
-  ConfigManager(ConfigManager const&) = delete;
-  ConfigManager& operator=(ConfigManager const&) = delete;
-
-  JsonDocument jsonDoc;
-
-  char const* configFilePath = "/config.json";
 
   Logger logger = Logger(Serial);
 
+  char const* CONFIG_FILE_PATH = "/config.json";
+
+  JsonDocument jsonDoc;
   bool configDirty = false;
 
   bool writeConfigFile();

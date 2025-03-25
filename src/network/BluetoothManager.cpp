@@ -2,14 +2,16 @@
 #include <utility>
 #include <Arduino.h>
 
+BluetoothManager::BluetoothManager() {
+  logger.prependLog = [] { return "BLE"; };
+}
+
 BluetoothManager& BluetoothManager::getInstance() {
   static BluetoothManager instance;
   return instance;
 }
 
 void BluetoothManager::init(char const* serverName, char const* serviceUUID) {
-  logger.prependLog = [] { return "BLE"; };
-
   BLEDevice::init(serverName);
 
   pServer = BLEDevice::createServer();

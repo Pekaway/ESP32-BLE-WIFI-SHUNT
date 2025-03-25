@@ -2,7 +2,14 @@
 #include <utils/ConfigManager.h>
 #include <WiFi.h>
 
-MQTTManager::MQTTManager() : client(256) {}
+MQTTManager::MQTTManager() : client(256) {
+  logger.prependLog = [] { return "SHUNT"; };
+}
+
+MQTTManager& MQTTManager::getInstance() {
+  static MQTTManager instance;
+  return instance;
+}
 
 void MQTTManager::begin() {
   ConfigManager& config = ConfigManager::getInstance();

@@ -1,3 +1,4 @@
+#include "CallbackHandler.h"
 #include "constants.h"
 #include "network/MQTTManager.h"
 #include <network/BluetoothManager.h>
@@ -12,47 +13,14 @@ Logger logger(Serial);
 BluetoothManager& btManager = BluetoothManager::getInstance();
 MQTTManager& mqttManager = MQTTManager::getInstance();
 WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
+CallbackHandler& callbackHandler = CallbackHandler::getInstance();
 
 BLECharacteristic* voltageChar;
 BLECharacteristic* currentChar;
 BLECharacteristic* socChar;
 BLECharacteristic* chargeChar;
 
-bool setupAllowed = true;
 unsigned long startUpTime = millis();
-
-void receivedMaxAmpCallback(String const& value) {
-  logger.info(("Received Max Amp: " + value).c_str());
-  if (setupAllowed) {
-    Shunt& shunt = Shunt::getInstance();
-    long long const maxAmpHours = strtoll(value.c_str(), nullptr, 10);
-    shunt.setMaxCapacity(maxAmpHours);
-  } else {
-    logger.warning("Setup already closed, ignoring received max amp hours");
-  }
-}
-
-void receivedSOCPercent(String const& value) {
-  logger.info(("Received SOC percent: " + value).c_str());
-  if (setupAllowed) {
-    Shunt& shunt = Shunt::getInstance();
-    long long const socPercent = strtoll(value.c_str(), nullptr, 10);
-    shunt.setCurrentStateOfCharge(socPercent);
-  } else {
-    logger.warning("Setup already closed, ignoring received SOC percent");
-  }
-}
-
-void receivedChargeEfficiency(String const& value) {
-  logger.info(("Received Charge Efficiency: " + value).c_str());
-  if (setupAllowed) {
-    Shunt& shunt = Shunt::getInstance();
-    uint8_t const chargeEfficiency = strtol(value.c_str(), nullptr, 10);
-    shunt.setChargeEfficiency(chargeEfficiency);
-  } else {
-    logger.warning("Setup already closed, ignoring received charge efficiency");
-  }
-}
 
 void setup() {
   Serial.begin(SERIAL_SPEED);
@@ -61,6 +29,8 @@ void setup() {
   ConfigManager& config = ConfigManager::getInstance();
   config.init();
 
+  callbackHandler.init();
+
   if (Shunt& shunt = Shunt::getInstance(); !shunt.init(MAXIMUM_AMPS)) {
     logger.critical("Failed to initialize Shunt");
     return;
@@ -68,18 +38,21 @@ void setup() {
 
   btManager.init(BLE_SERVER_NAME, SERVICE_UUID);
 
-  // Initialize BLE characteristics
   voltageChar = btManager.createReadCharacteristic(VOLTAGE_CHAR_UUID);
   currentChar = btManager.createReadCharacteristic(CURRENT_CHAR_UUID);
   socChar = btManager.createReadCharacteristic(SOC_CHAR_UUID);
   chargeChar = btManager.createReadCharacteristic(CHARGE_EFFICIENCY_CHAR_UUID);
 
-  btManager.createWriteCharacteristic(MAX_AMP_HOURS_CHAR_UUID,
-                                      receivedMaxAmpCallback);
-  btManager.createWriteCharacteristic(SOC_PERCENT_CHAR_UUID,
-                                      receivedSOCPercent);
-  btManager.createWriteCharacteristic(CHARGE_EFFICIENCY_CHAR_UUID,
-                                      receivedChargeEfficiency);
+  btManager.createWriteCharacteristic(
+      MAX_AMP_HOURS_CHAR_UUID,
+      [](String const& value) { callbackHandler.handleMaxAmpCallback(value); });
+  btManager.createWriteCharacteristic(
+      SOC_PERCENT_CHAR_UUID,
+      [](String const& value) { callbackHandler.handleSOCPercent(value); });
+  btManager.createWriteCharacteristic(
+      CHARGE_EFFICIENCY_CHAR_UUID, [](String const& value) {
+        callbackHandler.handleChargeEfficiency(value);
+      });
 
   btManager.startAdvertising();
 
@@ -90,15 +63,13 @@ void setup() {
 }
 
 void loop() {
-  if (setupAllowed && startUpTime + 60000 * 2 < millis()) {
-    setupAllowed = false;
-    logger.info("Setup closed");
+  if (callbackHandler.isSetupAllowed() && startUpTime + 60000 * 2 < millis()) {
+    callbackHandler.closeSetup();
   }
 
   Shunt& shunt = Shunt::getInstance();
   shunt.update();
 
-  // Update BLE characteristics
   voltageChar->setValue(String(shunt.getBusVoltage()).c_str());
   currentChar->setValue(String(shunt.getBusCurrent()).c_str());
   socChar->setValue(String(shunt.getStateOfCharge()).c_str());

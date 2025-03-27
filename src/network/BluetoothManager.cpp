@@ -1,6 +1,7 @@
 #include "BluetoothManager.h"
 #include <utility>
 #include <Arduino.h>
+#include <constants.h>
 
 BluetoothManager::BluetoothManager() {
   logger.prependLog = [] { return "BLE"; };
@@ -14,10 +15,15 @@ BluetoothManager& BluetoothManager::getInstance() {
 void BluetoothManager::init(char const* serverName, char const* serviceUUID) {
   BLEDevice::init(serverName);
 
+  auto advData = BLEAdvertisementData();
+  advData.setName(serverName);
+  advData.setManufacturerData(serverName);
+
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new ServerCallbacks(this));
+  pServer->getAdvertising()->setAdvertisementData(advData);
 
-  service = pServer->createService(serviceUUID);
+  service = pServer->createService(BLEUUID(SERVICE_UUID), 30, 0);
 
   String message = "Server initialized as: ";
   message += serverName;

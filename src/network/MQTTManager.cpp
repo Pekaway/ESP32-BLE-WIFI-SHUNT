@@ -36,6 +36,10 @@ void MQTTManager::handle() {
 }
 
 void MQTTManager::publishShuntValues() {
+  if (!client.connected()) {
+    return;
+  }
+
   Shunt& shunt = Shunt::getInstance();
 
   auto const voltage = shunt.getBusVoltage();
@@ -108,22 +112,22 @@ boolean MQTTManager::connect() {
     return false;
   }
 
-  logger.info("Connecting to MQTT broker...");
-
   ConfigManager& config = ConfigManager::getInstance();
   auto const server = config.get<String>(ConfigKey::MQTT_SERVER);
   auto const port = config.get<uint16_t>(ConfigKey::MQTT_PORT);
   auto const username = config.get<String>(ConfigKey::MQTT_USER);
   auto const password = config.get<String>(ConfigKey::MQTT_PASSWORD);
 
+  if (server.isEmpty()) {
+    return false;
+  }
+
   char logMessage[128];
   snprintf(logMessage, sizeof(logMessage), "Connecting to MQTT broker at %s:%d with username '%s' and password '%s'",
            server.c_str(), port, username.c_str(), password.c_str());
   logger.info(logMessage);
 
-  auto const connected = client.connect("shuntClient", username.c_str(), password.c_str());
-
-  if (connected) {
+  if (client.connect("shuntClient", username.c_str(), password.c_str())) {
     client.publish("shunt/status", "online", true, 1);
     logger.info("Connected to MQTT broker");
 
@@ -131,6 +135,7 @@ boolean MQTTManager::connect() {
 
     return true;
   }
+
   logger.critical("Failed to connect to MQTT broker!");
   return false;
 }

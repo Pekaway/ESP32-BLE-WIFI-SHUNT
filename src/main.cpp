@@ -93,7 +93,7 @@ constexpr unsigned long SHUNT_UPDATE_INTERVAL = 10000;
 void loop() {
   unsigned long const currentTime = millis();
 
-  if (callbackHandler.isSetupAllowed() && startUpTime + 60000 * 2 < currentTime) {
+  if (callbackHandler.isSetupAllowed() && startUpTime + SETUP_TIME < currentTime) {
     callbackHandler.closeSetup();
   }
 

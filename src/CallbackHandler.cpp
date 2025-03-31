@@ -1,5 +1,6 @@
 #include "CallbackHandler.h"
 #include "sensors/Shunt.h"
+#include <network/MQTTManager.h>
 #include <utils/ConfigManager.h>
 #include <WiFi.h>
 #include <WiFiManager.h>
@@ -41,6 +42,10 @@ void CallbackHandler::handleMQTTConfig(String const& value) {
       return;
     }
 
+    String jsonStr;
+    serializeJson(doc, jsonStr);
+    logger.info(("Parsed JSON: " + jsonStr).c_str());
+
     ConfigManager& config = ConfigManager::getInstance();
 
     if (doc["user"].is<String>()) {
@@ -67,6 +72,10 @@ void CallbackHandler::handleMQTTConfig(String const& value) {
       config.set<uint16_t>(ConfigKey::MQTT_PORT, port);
     }
 
+    config.saveConfig();
+
+    MQTTManager& mqtt = MQTTManager::getInstance();
+    mqtt.connect(true);
     logger.info("MQTT Configuration updated");
   }
 }
@@ -135,8 +144,8 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
     }
   }
 
-  if (doc["chargeEfficiency"].is<uint8_t>()) {
-    if (uint8_t const efficiency = doc["chargeEfficiency"]; efficiency > 0 && efficiency <= 100) {
+  if (doc["chargeEfficiency"].is<float>()) {
+    if (uint16_t const efficiency = doc["chargeEfficiency"]; efficiency > 0 && efficiency <= 100) {
       logger.info(("Setting charge efficiency: " + String(efficiency)).c_str());
       shunt.setChargeEfficiency(efficiency);
     } else {

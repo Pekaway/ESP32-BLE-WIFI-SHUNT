@@ -24,5 +24,6 @@ String const HASS_BASE_TOPIC = "homeassistant/sensor/pekaway_shunt/";
 // Other constants
 constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";
+auto constexpr SETUP_TIME = 10 * 60 * 1000;
 
 #endif  // CONSTANTS_H

@@ -24,6 +24,8 @@ class CallbackHandler {
   void handleMQTTServer(String const& value);
   void handleMQTTPort(String const& value);
 
+  void handleWiFi(String const& value);
+
  private:
   CallbackHandler();
   ~CallbackHandler() = default;

@@ -1,6 +1,8 @@
 #include "CallbackHandler.h"
 #include "sensors/Shunt.h"
 #include <utils/ConfigManager.h>
+#include <WiFi.h>
+#include <WiFiManager.h>
 
 CallbackHandler& CallbackHandler::getInstance() {
   static CallbackHandler instance;
@@ -89,5 +91,22 @@ void CallbackHandler::handleMQTTPort(String const& value) {
     uint16_t const port = strtol(value.c_str(), nullptr, 10);
     config.set<uint16_t>(ConfigKey::MQTT_PORT, port);
     logger.info("MQTT Port updated");
+  }
+}
+
+void CallbackHandler::handleWiFi(String const& value) {
+  logger.info(("Received WiFi: " + value).c_str());
+  if (isAllowed()) {
+    JsonDocument doc;
+    deserializeJson(doc, value);
+    String const ssid = doc["ssid"];
+    String const password = doc["password"];
+
+    WiFi.disconnect();
+    WiFi.persistent(true);
+    WiFi.begin(ssid, password);
+    WiFi.persistent(false);
+
+    logger.info("WiFi SSID updated");
   }
 }

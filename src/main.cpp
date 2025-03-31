@@ -57,6 +57,7 @@ void setup() {
                                       [](String const& value) { callbackHandler.handleMQTTServer(value); });
   btManager.createWriteCharacteristic(MQTT_PORT_CHAR_UUID,
                                       [](String const& value) { callbackHandler.handleMQTTPort(value); });
+  btManager.createWriteCharacteristic(WIFI_CHAR_UUID, [](String const& value) { callbackHandler.handleWiFi(value); });
 
   btManager.startAdvertising();
 

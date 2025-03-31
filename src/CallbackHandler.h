@@ -2,6 +2,7 @@
 #define CALLBACKHANDLER_H
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 #include <Logger.h>
 
 class CallbackHandler {
@@ -15,16 +16,9 @@ class CallbackHandler {
   void closeSetup();
   [[nodiscard]] bool isSetupAllowed() const;
 
-  void handleMaxAmpCallback(String const& value);
-  void handleSOCPercent(String const& value);
-  void handleChargeEfficiency(String const& value);
-
-  void handleMQTTUser(String const& value);
-  void handleMQTTPassword(String const& value);
-  void handleMQTTServer(String const& value);
-  void handleMQTTPort(String const& value);
-
+  void handleMQTTConfig(String const& value);
   void handleWiFi(String const& value);
+  void handleBatteryConfig(String const& value);
 
  private:
   CallbackHandler();

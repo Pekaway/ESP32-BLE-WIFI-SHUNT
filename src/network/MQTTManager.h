@@ -18,6 +18,7 @@ class MQTTManager {
   void handle();
   void publishShuntValues();
   void registerHomeAssistantSensors();
+  boolean connect(bool forceReconnect = false);
 
  private:
   MQTTManager();
@@ -30,8 +31,6 @@ class MQTTManager {
   NetworkClient net = NetworkClient();
   MQTTClient client;
   Logger logger = Logger(Serial);
-
-  boolean connect();
 };
 
 #endif  // MQTTMANAGER_H

@@ -30,67 +30,44 @@ bool CallbackHandler::isAllowed() {
   return false;
 }
 
-void CallbackHandler::handleMaxAmpCallback(String const& value) {
-  logger.info(("Received Max Amp: " + value).c_str());
+void CallbackHandler::handleMQTTConfig(String const& value) {
+  logger.info("Received MQTT Config JSON");
   if (isAllowed()) {
-    Shunt& shunt = Shunt::getInstance();
-    long long const maxAmpHours = strtoll(value.c_str(), nullptr, 10);
-    shunt.setMaxCapacity(maxAmpHours);
-  }
-}
+    JsonDocument doc;
+    DeserializationError const error = deserializeJson(doc, value);
 
-void CallbackHandler::handleSOCPercent(String const& value) {
-  logger.info(("Received SOC percent: " + value).c_str());
-  if (isAllowed()) {
-    Shunt& shunt = Shunt::getInstance();
-    long long const socPercent = strtoll(value.c_str(), nullptr, 10);
-    shunt.setCurrentStateOfCharge(socPercent);
-  }
-}
+    if (error) {
+      logger.critical(("JSON parsing failed: " + String(error.c_str())).c_str());
+      return;
+    }
 
-void CallbackHandler::handleChargeEfficiency(String const& value) {
-  logger.info(("Received Charge Efficiency: " + value).c_str());
-  if (isAllowed()) {
-    Shunt& shunt = Shunt::getInstance();
-    uint8_t const chargeEfficiency = strtol(value.c_str(), nullptr, 10);
-    shunt.setChargeEfficiency(chargeEfficiency);
-  }
-}
-
-void CallbackHandler::handleMQTTUser(String const& value) {
-  logger.info(("Received MQTT User: " + value).c_str());
-  if (isAllowed()) {
     ConfigManager& config = ConfigManager::getInstance();
-    config.set<String>(ConfigKey::MQTT_USER, value);
-    logger.info("MQTT User updated");
-  }
-}
 
-void CallbackHandler::handleMQTTPassword(String const& value) {
-  logger.info("Received MQTT Password");
-  if (isAllowed()) {
-    ConfigManager& config = ConfigManager::getInstance();
-    config.set<String>(ConfigKey::MQTT_PASSWORD, value);
-    logger.info("MQTT Password updated");
-  }
-}
+    if (doc["user"].is<String>()) {
+      String const user = doc["user"];
+      logger.info(("MQTT User: " + user).c_str());
+      config.set<String>(ConfigKey::MQTT_USER, user);
+    }
 
-void CallbackHandler::handleMQTTServer(String const& value) {
-  logger.info(("Received MQTT Server: " + value).c_str());
-  if (isAllowed()) {
-    ConfigManager& config = ConfigManager::getInstance();
-    config.set<String>(ConfigKey::MQTT_SERVER, value);
-    logger.info("MQTT Server updated");
-  }
-}
+    if (doc["password"].is<String>()) {
+      String const password = doc["password"];
+      logger.info("MQTT Password updated");
+      config.set<String>(ConfigKey::MQTT_PASSWORD, password);
+    }
 
-void CallbackHandler::handleMQTTPort(String const& value) {
-  logger.info(("Received MQTT Port: " + value).c_str());
-  if (isAllowed()) {
-    ConfigManager& config = ConfigManager::getInstance();
-    uint16_t const port = strtol(value.c_str(), nullptr, 10);
-    config.set<uint16_t>(ConfigKey::MQTT_PORT, port);
-    logger.info("MQTT Port updated");
+    if (doc["server"].is<String>()) {
+      String const server = doc["server"];
+      logger.info(("MQTT Server: " + server).c_str());
+      config.set<String>(ConfigKey::MQTT_SERVER, server);
+    }
+
+    if (doc["port"].is<u16_t>()) {
+      uint16_t const port = doc["port"];
+      logger.info(("MQTT Port: " + String(port)).c_str());
+      config.set<uint16_t>(ConfigKey::MQTT_PORT, port);
+    }
+
+    logger.info("MQTT Configuration updated");
   }
 }
 
@@ -98,7 +75,13 @@ void CallbackHandler::handleWiFi(String const& value) {
   logger.info(("Received WiFi: " + value).c_str());
   if (isAllowed()) {
     JsonDocument doc;
-    deserializeJson(doc, value);
+    DeserializationError const error = deserializeJson(doc, value);
+
+    if (error) {
+      logger.critical(("JSON parsing failed: " + String(error.c_str())).c_str());
+      return;
+    }
+
     String const ssid = doc["ssid"];
     String const password = doc["password"];
 
@@ -108,5 +91,77 @@ void CallbackHandler::handleWiFi(String const& value) {
     WiFi.persistent(false);
 
     logger.info("WiFi SSID updated");
+  }
+}
+
+void CallbackHandler::handleBatteryConfig(String const& value) {
+  logger.info("Received battery configuration");
+  if (!isAllowed()) {
+    logger.warning("Setup no longer allowed - ignoring battery configuration");
+    return;
+  }
+
+  // Validate JSON
+  JsonDocument doc;
+  DeserializationError const error = deserializeJson(doc, value);
+
+  if (error) {
+    logger.critical(("Battery JSON parsing failed: " + String(error.c_str())).c_str());
+    return;
+  }
+
+  ConfigManager& config = ConfigManager::getInstance();
+  Shunt& shunt = Shunt::getInstance();
+  bool configChanged = false;
+
+  // Handle max capacity
+  if (doc["maxCapacity"].is<uint32_t>()) {
+    if (uint32_t const maxCapacity = doc["maxCapacity"]; maxCapacity > 0 && maxCapacity <= 10000) {
+      logger.info(("Setting max capacity: " + String(maxCapacity)).c_str());
+      shunt.setMaxCapacity(maxCapacity);
+      configChanged = true;
+    } else {
+      logger.warning("Invalid max capacity value (must be uint32_t)");
+    }
+  }
+
+  // Handle SOC percent
+  if (doc["socPercent"].is<uint8_t>()) {
+    if (uint8_t const socPercent = doc["socPercent"]; socPercent > 0 && socPercent <= 100) {
+      logger.info(("Setting SOC percent: " + String(socPercent)).c_str());
+
+      // TODO
+
+      configChanged = true;
+    } else {
+      logger.warning("Invalid SOC percent value (must be 0-100)");
+    }
+  }
+
+  // Handle charge efficiency
+  if (doc["chargeEfficiency"].is<uint8_t>()) {
+    if (uint8_t const efficiency = doc["chargeEfficiency"]; efficiency > 0 && efficiency <= 100) {
+      logger.info(("Setting charge efficiency: " + String(efficiency)).c_str());
+      shunt.setChargeEfficiency(efficiency);
+      configChanged = true;
+    } else {
+      logger.warning("Invalid charge efficiency value (must be 0-100)");
+    }
+  }
+
+  if (doc["maxAmps"].is<float>()) {
+    if (float const maxAmps = doc["maxAmps"]; maxAmps > 0 && maxAmps <= 1022) {
+      logger.info(("Setting maximum amps: " + String(maxAmps)).c_str());
+      config.set<float>(ConfigKey::MAXIMUM_AMPS, maxAmps);
+      configChanged = true;
+    } else {
+      logger.warning("Invalid maximum amps value (must be 0-1022)");
+    }
+  }
+
+  if (configChanged) {
+    logger.info("Battery configuration updated");
+  } else {
+    logger.warning("No valid battery configuration parameters provided");
   }
 }

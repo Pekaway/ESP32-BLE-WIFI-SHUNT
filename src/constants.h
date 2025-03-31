@@ -5,16 +5,11 @@
 
 // BLE UUIDs
 auto constexpr SERVICE_UUID = "91bad492-b950-4226-aa2b-4ede9fa42f59";
-auto constexpr VOLTAGE_CHAR_UUID = "ff100f8c-1266-4309-b472-76bc25e4a62f";
-auto constexpr CURRENT_CHAR_UUID = "d2e8ede8-9b31-4478-9fd6-75845cb68b1d";
-auto constexpr SOC_CHAR_UUID = "459e9ea4-a335-4a3f-b838-46788fd6bbe4";
-auto constexpr MAX_AMP_HOURS_CHAR_UUID = "38f2bd70-d659-4970-86c1-061e24700a6e";
-auto constexpr SOC_PERCENT_CHAR_UUID = "63d58a25-c22b-4586-b297-f1e310b7b0bc";
-auto constexpr CHARGE_EFFICIENCY_CHAR_UUID = "d32b111a-bf43-467d-9b48-98a93eb277cf";
-auto constexpr MQTT_USER_CHAR_UUID = "2f681ce5-f2b0-4034-b714-d87156af4b5a";
-auto constexpr MQTT_PASSWORD_CHAR_UUID = "25459bd4-3f29-47b8-a8fd-0f3805c98d5c";
-auto constexpr MQTT_SERVER_CHAR_UUID = "1c6c142c-91e8-4833-8656-59d342df0c6a";
-auto constexpr MQTT_PORT_CHAR_UUID = "1d706718-80d0-4e76-b65c-a35a2eb7a697";
+auto constexpr SHUNT_STATUS_CHAR_UUID = "ff100f8c-1266-4309-b472-76bc25e4a62f";
+
+// BLE Write UUIDs
+auto constexpr BATTERY_CONFIG_CHAR_UUID = "63d58a25-c22b-4586-b297-f1e310b7b0bc";
+auto constexpr MQTT_CONFIG_CHAR_UUID = "2f681ce5-f2b0-4034-b714-d87156af4b5a";
 auto constexpr WIFI_CHAR_UUID = "785840ec-f07e-495c-a9e6-e268398ebdd6";
 
 // Shunt constants

@@ -15,10 +15,7 @@ MQTTManager& mqttManager = MQTTManager::getInstance();
 WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
 CallbackHandler& callbackHandler = CallbackHandler::getInstance();
 
-BLECharacteristic* voltageChar;
-BLECharacteristic* currentChar;
-BLECharacteristic* socChar;
-BLECharacteristic* chargeChar;
+BLECharacteristic* shuntStatusChar;
 
 unsigned long startUpTime = millis();
 
@@ -38,25 +35,12 @@ void setup() {
 
   btManager.init(BLE_SERVER_NAME, SERVICE_UUID);
 
-  voltageChar = btManager.createReadCharacteristic(VOLTAGE_CHAR_UUID);
-  currentChar = btManager.createReadCharacteristic(CURRENT_CHAR_UUID);
-  socChar = btManager.createReadCharacteristic(SOC_CHAR_UUID);
-  chargeChar = btManager.createReadCharacteristic(CHARGE_EFFICIENCY_CHAR_UUID);
+  shuntStatusChar = btManager.createReadCharacteristic(SHUNT_STATUS_CHAR_UUID);
 
-  btManager.createWriteCharacteristic(MAX_AMP_HOURS_CHAR_UUID,
-                                      [](String const& value) { callbackHandler.handleMaxAmpCallback(value); });
-  btManager.createWriteCharacteristic(SOC_PERCENT_CHAR_UUID,
-                                      [](String const& value) { callbackHandler.handleSOCPercent(value); });
-  btManager.createWriteCharacteristic(CHARGE_EFFICIENCY_CHAR_UUID,
-                                      [](String const& value) { callbackHandler.handleChargeEfficiency(value); });
-  btManager.createWriteCharacteristic(MQTT_USER_CHAR_UUID,
-                                      [](String const& value) { callbackHandler.handleMQTTUser(value); });
-  btManager.createWriteCharacteristic(MQTT_PASSWORD_CHAR_UUID,
-                                      [](String const& value) { callbackHandler.handleMQTTPassword(value); });
-  btManager.createWriteCharacteristic(MQTT_SERVER_CHAR_UUID,
-                                      [](String const& value) { callbackHandler.handleMQTTServer(value); });
-  btManager.createWriteCharacteristic(MQTT_PORT_CHAR_UUID,
-                                      [](String const& value) { callbackHandler.handleMQTTPort(value); });
+  btManager.createWriteCharacteristic(BATTERY_CONFIG_CHAR_UUID,
+                                      [](String const& value) { callbackHandler.handleBatteryConfig(value); });
+  btManager.createWriteCharacteristic(MQTT_CONFIG_CHAR_UUID,
+                                      [](String const& value) { callbackHandler.handleMQTTConfig(value); });
   btManager.createWriteCharacteristic(WIFI_CHAR_UUID, [](String const& value) { callbackHandler.handleWiFi(value); });
 
   btManager.startAdvertising();
@@ -67,6 +51,21 @@ void setup() {
   logger.info("Setup complete");
 }
 
+String buildShuntStatusJson() {
+  Shunt& shunt = Shunt::getInstance();
+
+  JsonDocument doc;
+  doc["voltage"] = shunt.getBusVoltage();
+  doc["current"] = shunt.getBusCurrent();
+  doc["soc"] = shunt.getStateOfCharge();
+  doc["capacity"] = shunt.getMaxCapacity();
+  doc["chargeEfficiency"] = shunt.getChargeEfficiency();
+
+  String statusJson;
+  serializeJson(doc, statusJson);
+  return statusJson;
+}
+
 void loop() {
   if (callbackHandler.isSetupAllowed() && startUpTime + 60000 * 2 < millis()) {
     callbackHandler.closeSetup();
@@ -75,10 +74,8 @@ void loop() {
   Shunt& shunt = Shunt::getInstance();
   shunt.update();
 
-  voltageChar->setValue(String(shunt.getBusVoltage()).c_str());
-  currentChar->setValue(String(shunt.getBusCurrent()).c_str());
-  socChar->setValue(String(shunt.getStateOfCharge()).c_str());
-  chargeChar->setValue(String(shunt.getChargeEfficiency()).c_str());
+  String const statusJson = buildShuntStatusJson();
+  shuntStatusChar->setValue(statusJson.c_str());
 
   wifiPortal.handle();
   mqttManager.handle();

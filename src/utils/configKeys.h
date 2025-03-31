@@ -18,11 +18,14 @@ enum class ConfigKey {
   CURRENT_SOC,
   CURRENT_CAPACITY_MAMS,
   CHARGE_EFFICIENCY,
+  FULL_CHARGE_VOLTAGE,
+  FULL_CHARGE_CURRENT,
+  FULL_CHARGE_DURATION,
 };
 
 class ConfigKeys {
  public:
-  static char const* toString(ConfigKey key) {
+  static char const* toString(ConfigKey const key) {
     static std::unordered_map<ConfigKey, char const*> const keyToStringMap = {
         {ConfigKey::DEVICE_NAME, "device_name"},
         {ConfigKey::MAX_CAPACITY, "max_capacity"},
@@ -37,6 +40,9 @@ class ConfigKeys {
         {ConfigKey::CURRENT_SOC, "current_soc"},
         {ConfigKey::CURRENT_CAPACITY_MAMS, "current_capacity_mams"},
         {ConfigKey::CHARGE_EFFICIENCY, "charge_efficiency"},
+        {ConfigKey::FULL_CHARGE_VOLTAGE, "full_charge_voltage"},
+        {ConfigKey::FULL_CHARGE_CURRENT, "full_charge_current"},
+        {ConfigKey::FULL_CHARGE_DURATION, "full_charge_duration"},
     };
 
     if (auto const it = keyToStringMap.find(key); it != keyToStringMap.end()) {

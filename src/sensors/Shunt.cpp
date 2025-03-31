@@ -47,7 +47,7 @@ float Shunt::getBusCurrent() {
 
 float Shunt::getPower() { return ina.getBusMicroWatts(0) / 1000000.0; }
 
-float Shunt::getStateOfCharge() { return calculateStateOfCharge(); }
+float Shunt::getStateOfCharge() const { return calculateStateOfCharge(); }
 
 void Shunt::setMaxCapacity(uint32_t ampHours) {
   maxCapacityMilliAmpMs = (ampHours) * 60LL * 60LL * 1000LL * 1000LL;
@@ -105,6 +105,10 @@ bool Shunt::loadConfig() {
     currentCapacityMilliAmpMs = strtoll(capacityStr, nullptr, 10);
   }
 
+  fullChargeVoltage = config.get<float>(ConfigKey::FULL_CHARGE_VOLTAGE, 14.2);
+  fullChargeCurrent = config.get<float>(ConfigKey::FULL_CHARGE_CURRENT, 4.0);
+  fullChargeDuration = config.get<uint32_t>(ConfigKey::FULL_CHARGE_DURATION, 3) * 60 * 1000;
+
   lastStoredCapacityMilliAmpMs = currentCapacityMilliAmpMs;
 
   char message[100];
@@ -117,7 +121,7 @@ bool Shunt::loadConfig() {
 bool Shunt::saveStateToConfig() {
   ConfigManager& config = ConfigManager::getInstance();
 
-  int socPercentage = static_cast<int>(calculateStateOfCharge());
+  int const socPercentage = static_cast<int>(calculateStateOfCharge());
   config.set(ConfigKey::CURRENT_SOC, socPercentage);
 
   // store current capacity in milliamp-milliseconds to preserve precision
@@ -154,11 +158,40 @@ void Shunt::update() {
     clampStateOfCharge();
   }
 
-  ConfigManager& config = ConfigManager::getInstance();
-  auto const autoSaveInterval = config.get<uint32_t>(ConfigKey::AUTO_SAVE_INTERVAL, 30) * 1000;
+  float const voltage = getBusVoltage();
+  float const current = getBusCurrent();
+  float const soc = calculateStateOfCharge();
 
-  if (currentMillis - lastStorageMillis >= autoSaveInterval) {
+  // Both conditions must be met:
+  // 1. Voltage must be at or above threshold
+  // 2. Current must be below threshold but greater than zero
+  bool const chargingConditionsMet = (voltage >= fullChargeVoltage) && (current < fullChargeCurrent) &&
+                                     (current > 0.0) && (soc < 99.0);  // Only trigger if not already at 100%
+
+  if (chargingConditionsMet) {
+    if (!fullChargeConditionMet) {
+      fullChargeConditionMet = true;
+      fullChargeConditionStartTime = currentMillis;
+      logger.info("Full charge conditions detected, starting timer");
+    } else if (currentMillis - fullChargeConditionStartTime >= fullChargeDuration) {
+      logger.info("Battery full charge criteria met for required duration");
+      setCurrentStateOfCharge(100);
+      fullChargeConditionMet = false;
+    }
+  } else if (fullChargeConditionMet) {
+    fullChargeConditionMet = false;
+    logger.info("Full charge conditions no longer met, resetting timer");
+  }
+
+  ConfigManager& config = ConfigManager::getInstance();
+
+  if (auto const autoSaveInterval = config.get<uint32_t>(ConfigKey::AUTO_SAVE_INTERVAL, 30) * 1000;
+      currentMillis - lastStorageMillis >= autoSaveInterval) {
     lastStorageMillis = currentMillis;
+
+    if (fullChargeConditionMet) {
+      currentCapacityMilliAmpMs = maxCapacityMilliAmpMs;
+    }
 
     int64_t capacityChange = lastStoredCapacityMilliAmpMs - currentCapacityMilliAmpMs;
     if (capacityChange < 0) capacityChange = -capacityChange;
@@ -172,7 +205,7 @@ void Shunt::update() {
   lastUpdateMillis = currentMillis;
 }
 
-float Shunt::calculateStateOfCharge() {
+float Shunt::calculateStateOfCharge() const {
   if (maxCapacityMilliAmpMs <= 0) return 0;
 
   return (static_cast<float>(currentCapacityMilliAmpMs) / static_cast<float>(maxCapacityMilliAmpMs)) * 100.0f;
@@ -186,4 +219,37 @@ void Shunt::clampStateOfCharge() {
   if (currentCapacityMilliAmpMs < 0) {
     currentCapacityMilliAmpMs = 0;
   }
+}
+
+void Shunt::setFullChargeVoltage(float voltage) {
+  ConfigManager& config = ConfigManager::getInstance();
+  fullChargeVoltage = voltage;
+  config.set<float>(ConfigKey::FULL_CHARGE_VOLTAGE, voltage);
+  config.saveConfig();
+
+  char message[50];
+  snprintf(message, sizeof(message), "Full charge voltage set to %.1fV", voltage);
+  logger.info(message);
+}
+
+void Shunt::setFullChargeCurrent(float current) {
+  ConfigManager& config = ConfigManager::getInstance();
+  fullChargeCurrent = current;
+  config.set<float>(ConfigKey::FULL_CHARGE_CURRENT, current);
+  config.saveConfig();
+
+  char message[50];
+  snprintf(message, sizeof(message), "Full charge current set to %.1fA", current);
+  logger.info(message);
+}
+
+void Shunt::setFullChargeDuration(uint32_t minutes) {
+  ConfigManager& config = ConfigManager::getInstance();
+  fullChargeDuration = minutes * 60 * 1000;  // Convert minutes to ms
+  config.set<uint32_t>(ConfigKey::FULL_CHARGE_DURATION, minutes);
+  config.saveConfig();
+
+  char message[50];
+  snprintf(message, sizeof(message), "Full charge duration set to %d min", minutes);
+  logger.info(message);
 }

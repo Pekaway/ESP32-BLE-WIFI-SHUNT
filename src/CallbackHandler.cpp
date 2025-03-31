@@ -101,7 +101,6 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
     return;
   }
 
-  // Validate JSON
   JsonDocument doc;
   DeserializationError const error = deserializeJson(doc, value);
 
@@ -110,40 +109,36 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
     return;
   }
 
+  String jsonStr;
+  serializeJson(doc, jsonStr);
+  logger.info(("Parsed JSON: " + jsonStr).c_str());
+
   ConfigManager& config = ConfigManager::getInstance();
   Shunt& shunt = Shunt::getInstance();
-  bool configChanged = false;
 
-  // Handle max capacity
   if (doc["maxCapacity"].is<uint32_t>()) {
     if (uint32_t const maxCapacity = doc["maxCapacity"]; maxCapacity > 0 && maxCapacity <= 10000) {
       logger.info(("Setting max capacity: " + String(maxCapacity)).c_str());
       shunt.setMaxCapacity(maxCapacity);
-      configChanged = true;
     } else {
       logger.warning("Invalid max capacity value (must be uint32_t)");
     }
   }
 
-  // Handle SOC percent
   if (doc["socPercent"].is<uint8_t>()) {
     if (uint8_t const socPercent = doc["socPercent"]; socPercent > 0 && socPercent <= 100) {
       logger.info(("Setting SOC percent: " + String(socPercent)).c_str());
 
       // TODO
-
-      configChanged = true;
     } else {
       logger.warning("Invalid SOC percent value (must be 0-100)");
     }
   }
 
-  // Handle charge efficiency
   if (doc["chargeEfficiency"].is<uint8_t>()) {
     if (uint8_t const efficiency = doc["chargeEfficiency"]; efficiency > 0 && efficiency <= 100) {
       logger.info(("Setting charge efficiency: " + String(efficiency)).c_str());
       shunt.setChargeEfficiency(efficiency);
-      configChanged = true;
     } else {
       logger.warning("Invalid charge efficiency value (must be 0-100)");
     }
@@ -153,15 +148,37 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
     if (float const maxAmps = doc["maxAmps"]; maxAmps > 0 && maxAmps <= 1022) {
       logger.info(("Setting maximum amps: " + String(maxAmps)).c_str());
       config.set<float>(ConfigKey::MAXIMUM_AMPS, maxAmps);
-      configChanged = true;
     } else {
       logger.warning("Invalid maximum amps value (must be 0-1022)");
     }
   }
 
-  if (configChanged) {
-    logger.info("Battery configuration updated");
-  } else {
-    logger.warning("No valid battery configuration parameters provided");
+  if (doc["fullChargeVoltage"].is<float>()) {
+    if (float const voltage = doc["fullChargeVoltage"]; voltage > 0 && voltage <= 100) {
+      logger.info(("Setting full charge voltage: " + String(voltage)).c_str());
+      shunt.setFullChargeVoltage(voltage);
+    } else {
+      logger.warning("Invalid full charge voltage value (must be 0-100)");
+    }
   }
+
+  if (doc["fullChargeCurrent"].is<float>()) {
+    if (float const current = doc["fullChargeCurrent"]; current > 0 && current <= 100) {
+      logger.info(("Setting full charge current: " + String(current)).c_str());
+      shunt.setFullChargeCurrent(current);
+    } else {
+      logger.warning("Invalid full charge current value (must be 0-100)");
+    }
+  }
+
+  if (doc["fullChargeDuration"].is<uint32_t>()) {
+    if (uint32_t const duration = doc["fullChargeDuration"]; duration > 0 && duration <= 60) {
+      logger.info(("Setting full charge duration: " + String(duration)).c_str());
+      shunt.setFullChargeDuration(duration);
+    } else {
+      logger.warning("Invalid full charge duration value (must be 1-60 minutes)");
+    }
+  }
+
+  logger.info("Battery configuration updated");
 }

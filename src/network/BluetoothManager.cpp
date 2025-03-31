@@ -32,11 +32,11 @@ void BluetoothManager::init(char const* serverName, char const* serviceUUID) {
 
 void BluetoothManager::handle() {
   if (pServer) {
-    auto const connectedCount = pServer->getConnectedCount();
-
-    String message = "Connected devices: ";
-    message += connectedCount;
-    logger.info(message.c_str());
+    if (auto const connectedCount = pServer->getConnectedCount(); connectedCount > 0) {
+      String message = "Connected devices: ";
+      message += connectedCount;
+      logger.info(message.c_str());
+    }
   } else {
     logger.critical("Server not initialized");
   }
@@ -84,9 +84,10 @@ BLECharacteristic* BluetoothManager::createNotifyCharacteristic(char const* char
 }
 
 BLECharacteristic* BluetoothManager::createWriteCharacteristic(char const* charUUID,
-                                                               std::function<void(String const&)> callback) {
+                                                               std::function<void(String const&)> callback,
+                                                               uint8_t const properties) {
   if (service) {
-    BLECharacteristic* characteristic = service->createCharacteristic(charUUID, BLECharacteristic::PROPERTY_WRITE);
+    BLECharacteristic* characteristic = service->createCharacteristic(charUUID, properties);
     characteristic->setCallbacks(new CharacteristicCallbacks(std::move(callback)));
 
     String message = "Write characteristic created with UUID: ";

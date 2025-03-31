@@ -24,7 +24,8 @@ class BluetoothManager {
 
   BLECharacteristic* createReadCharacteristic(char const* charUUID);
   BLECharacteristic* createNotifyCharacteristic(char const* charUUID);
-  BLECharacteristic* createWriteCharacteristic(char const* charUUID, std::function<void(String const&)> callback);
+  BLECharacteristic* createWriteCharacteristic(char const* charUUID, std::function<void(String const&)> callback,
+                                               uint8_t properties = BLECharacteristic::PROPERTY_WRITE);
 
  private:
   BluetoothManager();

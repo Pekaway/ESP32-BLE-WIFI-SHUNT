@@ -40,3 +40,10 @@ Currently works with a 200A/75MV shunt.
 **Hints:**
 
 If the COM port is not found, rotate the USB-C cable. Not all pins are used.
+
+## Dev Build
+
+1. Create `data` with `mkdir data` directory
+2. Build FS `pio run -e esp32-c3-devkitm-1_debug --target buildfs`
+3. Upload FS `pio run -e esp32-c3-devkitm-1_debug --target uploadfs`
+4. Build and upload `pio run -e esp32-c3-devkitm-1_debug --target upload`

@@ -11,6 +11,7 @@
 
 Logger logger(Serial);
 
+ConfigManager& config = ConfigManager::getInstance();
 BluetoothManager& btManager = BluetoothManager::getInstance();
 MQTTManager& mqttManager = MQTTManager::getInstance();
 WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
@@ -21,6 +22,7 @@ Adafruit_NeoPixel pixels(1, 4, NEO_GRB + NEO_KHZ800);
 BLECharacteristic* shuntStatusChar;
 BLECharacteristic* batteryConfigChar;
 BLECharacteristic* wifiConfigChar;
+BLECharacteristic* mqttConfigChar;
 
 unsigned long startUpTime = millis();
 
@@ -28,7 +30,6 @@ void setup() {
   Serial.begin(SERIAL_SPEED);
   logger.info("Starting setup...");
 
-  ConfigManager& config = ConfigManager::getInstance();
   config.init();
 
   callbackHandler.init();
@@ -45,8 +46,9 @@ void setup() {
   batteryConfigChar = btManager.createWriteCharacteristic(
       BATTERY_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleBatteryConfig(value); },
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
-  btManager.createWriteCharacteristic(MQTT_CONFIG_CHAR_UUID,
-                                      [](String const& value) { callbackHandler.handleMQTTConfig(value); });
+  mqttConfigChar = btManager.createWriteCharacteristic(
+      MQTT_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleMQTTConfig(value); },
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
   wifiConfigChar = btManager.createWriteCharacteristic(
       WIFI_CHAR_UUID, [](String const& value) { callbackHandler.handleWiFi(value); },
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
@@ -78,11 +80,9 @@ void updateShuntStatus() {
 }
 
 void updateBatteryConfigCharacteristic() {
-  ConfigManager& config = ConfigManager::getInstance();
-
   JsonDocument doc;
   doc["maxCapacity"] = shunt.getMaxCapacity();
-  doc["socPercent"] = static_cast<uint8_t>(shunt.calculateStateOfCharge());
+  doc["socPercentage"] = static_cast<uint8_t>(shunt.calculateStateOfCharge());
   doc["chargeEfficiency"] = shunt.getChargeEfficiency();
   doc["maxAmps"] = config.get<float>(ConfigKey::MAXIMUM_AMPS, 0);
   doc["fullChargeVoltage"] = shunt.getFullChargeVoltage();
@@ -98,11 +98,27 @@ void updateBatteryConfigCharacteristic() {
 void updateWifiConfigCharacteristic() {
   JsonDocument doc;
   doc["ip"] = WiFiManagerPortal::getIp();
+  doc["ssid"] = WiFiManagerPortal::getSSID();
 
   String jsonString;
   serializeJson(doc, jsonString);
 
   wifiConfigChar->setValue(jsonString.c_str());
+}
+
+void updateMqttConfigCharacteristic() {
+  ConfigManager& config = ConfigManager::getInstance();
+
+  JsonDocument doc;
+  doc["server"] = config.get<String>(ConfigKey::MQTT_SERVER);
+  doc["port"] = config.get<uint16_t>(ConfigKey::MQTT_PORT);
+  doc["user"] = config.get<String>(ConfigKey::MQTT_USER);
+  doc["password"] = config.get<String>(ConfigKey::MQTT_PASSWORD);
+
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  mqttConfigChar->setValue(jsonString.c_str());
 }
 
 void updatePixel() {
@@ -139,6 +155,7 @@ void loop() {
     updateBatteryConfigCharacteristic();
     updateShuntStatus();
     updateWifiConfigCharacteristic();
+    updateMqttConfigCharacteristic();
     mqttManager.publishShuntValues();
   }
 

@@ -134,11 +134,11 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
     }
   }
 
-  if (doc["socPercent"].is<uint8_t>()) {
-    if (uint8_t const socPercent = doc["socPercent"]; socPercent > 0 && socPercent <= 100) {
+  if (doc["socPercentage"].is<uint8_t>()) {
+    if (uint8_t const socPercent = doc["socPercentage"]; socPercent > 0 && socPercent <= 100) {
       logger.info(("Setting SOC percent: " + String(socPercent)).c_str());
 
-      // TODO
+      shunt.setCurrentStateOfCharge(socPercent);
     } else {
       logger.warning("Invalid SOC percent value (must be 0-100)");
     }

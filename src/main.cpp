@@ -5,6 +5,7 @@
 #include <network/WiFiManagerPortal.h>
 #include <sensors/Shunt.h>
 #include <utils/ConfigManager.h>
+#include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 #include <Logger.h>
 
@@ -15,6 +16,7 @@ MQTTManager& mqttManager = MQTTManager::getInstance();
 WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
 CallbackHandler& callbackHandler = CallbackHandler::getInstance();
 Shunt& shunt = Shunt::getInstance();
+Adafruit_NeoPixel pixels(1, 4, NEO_GRB + NEO_KHZ800);
 
 BLECharacteristic* shuntStatusChar;
 BLECharacteristic* batteryConfigChar;
@@ -53,6 +55,9 @@ void setup() {
 
   wifiPortal.begin();
   mqttManager.begin();
+
+  pixels.setPixelColor(0, Adafruit_NeoPixel::Color(100, 100, 100));
+  pixels.show();
 
   logger.info("Setup complete");
 }
@@ -100,14 +105,32 @@ void updateWifiConfigCharacteristic() {
   wifiConfigChar->setValue(jsonString.c_str());
 }
 
+void updatePixel() {
+  auto const currentMicroAmps = shunt.getBusCurrent();
+
+  uint8_t const brightness = map(abs(currentMicroAmps / 1000000.0), 0, 500, 0, 510);
+
+  if (currentMicroAmps < 0) {
+    pixels.setPixelColor(0, Adafruit_NeoPixel::Color(0, brightness, 0));
+  } else if (currentMicroAmps > 0) {
+    pixels.setPixelColor(0, Adafruit_NeoPixel::Color(brightness, 0, 0));
+  } else {
+    pixels.setPixelColor(0, Adafruit_NeoPixel::Color(0, 0, 0));
+  }
+
+  pixels.show();
+}
+
 unsigned long lastShuntUpdateTime = 0;
 constexpr unsigned long SHUNT_UPDATE_INTERVAL = 10000;
+bool setupAllowed = true;
 
 void loop() {
   unsigned long const currentTime = millis();
 
   if (callbackHandler.isSetupAllowed() && startUpTime + SETUP_TIME < currentTime) {
     callbackHandler.closeSetup();
+    setupAllowed = false;
   }
 
   if (currentTime - lastShuntUpdateTime >= SHUNT_UPDATE_INTERVAL) {
@@ -125,6 +148,10 @@ void loop() {
   wifiPortal.handle();
   mqttManager.handle();
   btManager.handle();
+
+  if (!setupAllowed) {
+    updatePixel();
+  }
 
   delay(1000);
 }

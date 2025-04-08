@@ -14,6 +14,7 @@ class WiFiManagerPortal {
 
   void begin();
   void handle();
+  static String getIp() { return WiFi.localIP().toString(); }
 
  private:
   WiFiManagerPortal();

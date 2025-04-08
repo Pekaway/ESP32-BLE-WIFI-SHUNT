@@ -18,6 +18,7 @@ Shunt& shunt = Shunt::getInstance();
 
 BLECharacteristic* shuntStatusChar;
 BLECharacteristic* batteryConfigChar;
+BLECharacteristic* wifiConfigChar;
 
 unsigned long startUpTime = millis();
 
@@ -44,7 +45,9 @@ void setup() {
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
   btManager.createWriteCharacteristic(MQTT_CONFIG_CHAR_UUID,
                                       [](String const& value) { callbackHandler.handleMQTTConfig(value); });
-  btManager.createWriteCharacteristic(WIFI_CHAR_UUID, [](String const& value) { callbackHandler.handleWiFi(value); });
+  wifiConfigChar = btManager.createWriteCharacteristic(
+      WIFI_CHAR_UUID, [](String const& value) { callbackHandler.handleWiFi(value); },
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
   btManager.startAdvertising();
 
@@ -87,6 +90,16 @@ void updateBatteryConfigCharacteristic() {
   batteryConfigChar->setValue(jsonString.c_str());
 }
 
+void updateWifiConfigCharacteristic() {
+  JsonDocument doc;
+  doc["ip"] = WiFiManagerPortal::getIp();
+
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  wifiConfigChar->setValue(jsonString.c_str());
+}
+
 unsigned long lastShuntUpdateTime = 0;
 constexpr unsigned long SHUNT_UPDATE_INTERVAL = 10000;
 
@@ -102,6 +115,7 @@ void loop() {
 
     updateBatteryConfigCharacteristic();
     updateShuntStatus();
+    updateWifiConfigCharacteristic();
     mqttManager.publishShuntValues();
   }
 

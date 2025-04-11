@@ -34,12 +34,12 @@ void setup() {
 
   callbackHandler.init();
 
-  if (Shunt& shunt = Shunt::getInstance(); !shunt.init(MAXIMUM_AMPS)) {
+  if (Shunt& shunt = Shunt::getInstance(); !shunt.init()) {
     logger.critical("Failed to initialize Shunt");
     return;
   }
 
-  btManager.init(BLE_SERVER_NAME, SERVICE_UUID);
+  btManager.init(BLE_SERVER_NAME);
 
   shuntStatusChar = btManager.createNotifyCharacteristic(SHUNT_STATUS_CHAR_UUID);
 
@@ -138,7 +138,6 @@ void updatePixel() {
 }
 
 unsigned long lastShuntUpdateTime = 0;
-constexpr unsigned long SHUNT_UPDATE_INTERVAL = 10000;
 bool setupAllowed = true;
 
 void loop() {

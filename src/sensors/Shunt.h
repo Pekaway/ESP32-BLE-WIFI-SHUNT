@@ -11,7 +11,7 @@ class Shunt {
  public:
   static Shunt& getInstance();
 
-  bool init(uint16_t maximumAmps = 1022);
+  bool init();
   void update();
 
   float getBusVoltage();
@@ -40,7 +40,7 @@ class Shunt {
   INA_Class ina;
   uint8_t deviceCount = 0;
   uint32_t shuntMicroOhm = SHUNT_MICRO_OHM;
-  uint32_t maximumAmps = 1022;
+  uint32_t maximumAmps = SHUNT_MAXIMUM_AMPS;
 
   int64_t maxCapacityMilliAmpMs = 0;
   int64_t currentCapacityMilliAmpMs = 0;

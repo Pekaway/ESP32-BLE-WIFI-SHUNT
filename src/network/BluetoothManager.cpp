@@ -12,7 +12,7 @@ BluetoothManager& BluetoothManager::getInstance() {
   return instance;
 }
 
-void BluetoothManager::init(char const* serverName, char const* serviceUUID) {
+void BluetoothManager::init(char const* serverName) {
   BLEDevice::init(serverName);
 
   auto advData = BLEAdvertisementData();

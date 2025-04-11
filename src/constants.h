@@ -1,8 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include <Arduino.h>
-
 // BLE UUIDs
 auto constexpr SERVICE_UUID = "91bad492-b950-4226-aa2b-4ede9fa42f59";
 auto constexpr SHUNT_STATUS_CHAR_UUID = "ff100f8c-1266-4309-b472-76bc25e4a62f";
@@ -14,16 +12,15 @@ auto constexpr WIFI_CHAR_UUID = "785840ec-f07e-495c-a9e6-e268398ebdd6";
 
 // Shunt constants
 constexpr uint32_t SHUNT_MICRO_OHM = 375;
-constexpr uint16_t MAXIMUM_AMPS = 1022;
+constexpr uint16_t SHUNT_MAXIMUM_AMPS = 1022;
 
 // MQTT constants
-auto const MQTT_BROKER = "mqttapi-emqx-vanpi.pekaway.de";
-constexpr auto MQTT_PORT = 8883;
 String const HASS_BASE_TOPIC = "homeassistant/sensor/pekaway_shunt/";
 
 // Other constants
 constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";
 auto constexpr SETUP_TIME = 10 * 60 * 1000;
+constexpr unsigned long SHUNT_UPDATE_INTERVAL = 10000;
 
 #endif  // CONSTANTS_H

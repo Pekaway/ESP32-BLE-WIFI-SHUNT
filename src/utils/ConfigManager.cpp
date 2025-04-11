@@ -57,7 +57,7 @@ bool ConfigManager::resetToDefaults() {
   return saveConfig();
 }
 
-bool ConfigManager::hasKey(ConfigKey key) {
+bool ConfigManager::hasKey(const ConfigKey key) {
   char const* keyStr = ConfigKeys::toString(key);
   return jsonDoc[keyStr].is<JsonVariant>();
 }
@@ -68,7 +68,7 @@ String* ConfigManager::getKeys(int& count) {
     count++;
   }
 
-  String* keys = new String[count];
+  auto* keys = new String[count];
   int i = 0;
   for (JsonPair kv : jsonDoc.as<JsonObject>()) {
     keys[i++] = kv.key().c_str();
@@ -84,7 +84,7 @@ bool ConfigManager::writeConfigFile() {
     return false;
   }
 
-  size_t bytesWritten = serializeJson(jsonDoc, file);
+  const size_t bytesWritten = serializeJson(jsonDoc, file);
   file.close();
 
   if (bytesWritten == 0) {
@@ -107,7 +107,7 @@ bool ConfigManager::readConfigFile() {
     return false;
   }
 
-  DeserializationError error = deserializeJson(jsonDoc, file);
+  const DeserializationError error = deserializeJson(jsonDoc, file);
   file.close();
 
   if (error) {

@@ -9,8 +9,8 @@ WiFiManagerPortal& WiFiManagerPortal::getInstance() {
 WiFiManagerPortal::WiFiManagerPortal() {
   logger.prependLog = [] { return "WIFI"; };
 
-  wifiManager.setSaveConfigCallback([this]() { saveConfigCallback(); });
-  wifiManager.setSaveParamsCallback([this]() { saveParamsCallback(); });
+  wifiManager.setSaveConfigCallback([this] { saveConfigCallback(); });
+  wifiManager.setSaveParamsCallback([this] { saveParamsCallback(); });
 
   ConfigManager& config_manager = ConfigManager::getInstance();
 

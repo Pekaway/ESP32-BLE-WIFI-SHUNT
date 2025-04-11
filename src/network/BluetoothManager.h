@@ -17,7 +17,7 @@ class BluetoothManager {
   BluetoothManager(BluetoothManager const&) = delete;
   BluetoothManager& operator=(BluetoothManager const&) = delete;
 
-  void init(char const* serverName, char const* serviceUUID);
+  void init(char const* serverName);
   void startAdvertising();
   void handle();
   [[nodiscard]] bool isConnected() const;

@@ -1,8 +1,12 @@
 #ifndef CALLBACKHANDLER_H
 #define CALLBACKHANDLER_H
 
+#include <network/WiFiManagerPortal.h>
+#include <sensors/Shunt.h>
+#include <utils/ConfigManager.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include <BLECharacteristic.h>
 #include <Logger.h>
 
 class CallbackHandler {
@@ -20,11 +24,19 @@ class CallbackHandler {
   void handleWiFi(String const& value);
   void handleBatteryConfig(String const& value);
 
+  void updateShuntStatus(BLECharacteristic* shuntStatusChar) const;
+  void updateBatteryConfigCharacteristic(BLECharacteristic* batteryConfigChar) const;
+  static void updateWifiConfigCharacteristic(BLECharacteristic* wifiConfigChar);
+  void updateMqttConfigCharacteristic(BLECharacteristic* mqttConfigChar) const;
+
  private:
   CallbackHandler();
   ~CallbackHandler() = default;
 
   Logger logger = Logger(Serial);
+  Shunt& shunt = Shunt::getInstance();
+  ConfigManager& config = ConfigManager::getInstance();
+  WiFiManagerPortal& portal = WiFiManagerPortal::getInstance();
   bool setupAllowed = true;
 
   bool isAllowed();

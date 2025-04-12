@@ -17,10 +17,10 @@ ConfigManager& config = ConfigManager::getInstance();
 BluetoothManager& btManager = BluetoothManager::getInstance();
 MQTTManager& mqttManager = MQTTManager::getInstance();
 WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
-CallbackHandler& callbackHandler = CallbackHandler::getInstance();
 Shunt& shunt = Shunt::getInstance();
 ResetManager& resetManager = ResetManager::getInstance();
 NeoPixel& pixel = NeoPixel::getInstance();
+CallbackHandler& callbackHandler = CallbackHandler::getInstance();
 
 BLECharacteristic* shuntStatusChar;
 BLECharacteristic* batteryConfigChar;
@@ -64,65 +64,7 @@ void setup() {
   logger.info("Setup complete");
 }
 
-void updateShuntStatus() {
-  JsonDocument doc;
-  doc["voltage"] = shunt.getBusVoltage();
-  doc["current"] = shunt.getBusCurrent();
-  doc["soc"] = shunt.getStateOfCharge();
-  doc["capacity"] = shunt.getMaxCapacity();
-  doc["chargeEfficiency"] = shunt.getChargeEfficiency();
-  doc["time"] = millis();
-
-  String statusJson;
-  serializeJson(doc, statusJson);
-  shuntStatusChar->setValue(statusJson.c_str());
-  shuntStatusChar->notify();
-}
-
-void updateBatteryConfigCharacteristic() {
-  JsonDocument doc;
-  doc["maxCapacity"] = shunt.getMaxCapacity();
-  doc["socPercentage"] = static_cast<uint8_t>(shunt.calculateStateOfCharge());
-  doc["chargeEfficiency"] = shunt.getChargeEfficiency();
-  doc["maxAmps"] = config.get<float>(ConfigKey::MAXIMUM_AMPS, 0);
-  doc["fullChargeVoltage"] = shunt.getFullChargeVoltage();
-  doc["fullChargeCurrent"] = shunt.getFullChargeCurrent();
-  doc["fullChargeDuration"] = shunt.getFullChargeDuration();
-
-  String jsonString;
-  serializeJson(doc, jsonString);
-
-  batteryConfigChar->setValue(jsonString.c_str());
-}
-
-void updateWifiConfigCharacteristic() {
-  JsonDocument doc;
-  doc["ip"] = WiFiManagerPortal::getIp();
-  doc["ssid"] = WiFiManagerPortal::getSSID();
-
-  String jsonString;
-  serializeJson(doc, jsonString);
-
-  wifiConfigChar->setValue(jsonString.c_str());
-}
-
-void updateMqttConfigCharacteristic() {
-  ConfigManager& config = ConfigManager::getInstance();
-
-  JsonDocument doc;
-  doc["server"] = config.get<String>(ConfigKey::MQTT_SERVER);
-  doc["port"] = config.get<uint16_t>(ConfigKey::MQTT_PORT);
-  doc["user"] = config.get<String>(ConfigKey::MQTT_USER);
-  doc["password"] = config.get<String>(ConfigKey::MQTT_PASSWORD);
-
-  String jsonString;
-  serializeJson(doc, jsonString);
-
-  mqttConfigChar->setValue(jsonString.c_str());
-}
-
 unsigned long lastShuntUpdateTime = 0;
-bool setupAllowed = true;
 
 void loop() {
   unsigned long const currentTime = millis();
@@ -132,22 +74,21 @@ void loop() {
   if (callbackHandler.isSetupAllowed() && startUpTime + SETUP_TIME < currentTime) {
     callbackHandler.closeSetup();
     pixel.closeSetup();
-    setupAllowed = false;
   }
 
   if (currentTime - lastShuntUpdateTime >= SHUNT_UPDATE_INTERVAL) {
     lastShuntUpdateTime = currentTime;
 
-    updateBatteryConfigCharacteristic();
-    updateShuntStatus();
-    updateWifiConfigCharacteristic();
-    updateMqttConfigCharacteristic();
+    callbackHandler.updateBatteryConfigCharacteristic(batteryConfigChar);
+    callbackHandler.updateShuntStatus(shuntStatusChar);
+    CallbackHandler::updateWifiConfigCharacteristic(wifiConfigChar);
+    callbackHandler.updateMqttConfigCharacteristic(mqttConfigChar);
+
     mqttManager.publishShuntValues();
   }
 
   shunt.update();
 
-  // Handle network services on every iteration
   wifiPortal.handle();
   mqttManager.handle();
   btManager.handle();

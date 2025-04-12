@@ -191,3 +191,58 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
 
   logger.info("Battery configuration updated");
 }
+
+void CallbackHandler::updateShuntStatus(BLECharacteristic* shuntStatusChar) const {
+  JsonDocument doc;
+  doc["voltage"] = shunt.getBusVoltage();
+  doc["current"] = shunt.getBusCurrent();
+  doc["soc"] = shunt.getStateOfCharge();
+  doc["capacity"] = shunt.getMaxCapacity();
+  doc["chargeEfficiency"] = shunt.getChargeEfficiency();
+  doc["time"] = millis();
+
+  String statusJson;
+  serializeJson(doc, statusJson);
+  shuntStatusChar->setValue(statusJson.c_str());
+  shuntStatusChar->notify();
+}
+
+void CallbackHandler::updateBatteryConfigCharacteristic(BLECharacteristic* batteryConfigChar) const {
+  JsonDocument doc;
+  doc["maxCapacity"] = shunt.getMaxCapacity();
+  doc["socPercentage"] = static_cast<uint8_t>(shunt.calculateStateOfCharge());
+  doc["chargeEfficiency"] = shunt.getChargeEfficiency();
+  doc["maxAmps"] = config.get<float>(ConfigKey::MAXIMUM_AMPS, 0);
+  doc["fullChargeVoltage"] = shunt.getFullChargeVoltage();
+  doc["fullChargeCurrent"] = shunt.getFullChargeCurrent();
+  doc["fullChargeDuration"] = shunt.getFullChargeDuration();
+
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  batteryConfigChar->setValue(jsonString.c_str());
+}
+
+void CallbackHandler::updateWifiConfigCharacteristic(BLECharacteristic* wifiConfigChar) {
+  JsonDocument doc;
+  doc["ip"] = WiFiManagerPortal::getIp();
+  doc["ssid"] = WiFiManagerPortal::getSSID();
+
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  wifiConfigChar->setValue(jsonString.c_str());
+}
+
+void CallbackHandler::updateMqttConfigCharacteristic(BLECharacteristic* mqttConfigChar) const {
+  JsonDocument doc;
+  doc["server"] = config.get<String>(ConfigKey::MQTT_SERVER);
+  doc["port"] = config.get<uint16_t>(ConfigKey::MQTT_PORT);
+  doc["user"] = config.get<String>(ConfigKey::MQTT_USER);
+  doc["password"] = config.get<String>(ConfigKey::MQTT_PASSWORD);
+
+  String jsonString;
+  serializeJson(doc, jsonString);
+
+  mqttConfigChar->setValue(jsonString.c_str());
+}

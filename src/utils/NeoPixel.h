@@ -1,0 +1,31 @@
+#ifndef NEOPIXEL_H
+#define NEOPIXEL_H
+#include <sensors/Shunt.h>
+#include <Adafruit_NeoPixel.h>
+#include <Logger.h>
+
+class NeoPixel {
+ public:
+  NeoPixel(NeoPixel const&) = delete;
+  NeoPixel& operator=(NeoPixel const&) = delete;
+
+  static NeoPixel& getInstance();
+
+  void begin();
+  void full();
+  void red();
+  void handle();
+  void closeSetup() { setUpAllowed = false; }
+
+ private:
+  NeoPixel();
+  ~NeoPixel() = default;
+
+  Adafruit_NeoPixel pixel;
+  Shunt& shunt = Shunt::getInstance();
+  bool setUpAllowed = true;
+
+  Logger logger = Logger(Serial);
+};
+
+#endif  // NEOPIXEL_H

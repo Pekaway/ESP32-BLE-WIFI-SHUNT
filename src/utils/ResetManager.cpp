@@ -1,6 +1,7 @@
 #include "./ResetManager.h"
 #include "../constants.h"
 #include "ConfigManager.h"
+#include "NeoPixel.h"
 #include <network/WiFiManagerPortal.h>
 
 ResetManager& ResetManager::getInstance() {
@@ -43,13 +44,16 @@ void ResetManager::handle() {
 void ResetManager::checkResetCondition() {
   if (auto const bootCount = jsonDoc["bootCount"].as<uint8_t>(); bootCount >= RESET_THRESHOLD) {
     logger.info("Reboot threshold reached! Resetting configuration...");
+    NeoPixel& pixel = NeoPixel::getInstance();
+    pixel.red();
 
     ConfigManager& config = ConfigManager::getInstance();
     config.resetToDefaults();
     WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
     wifiPortal.reset();
-
     resetCounters();
+
+    delay(5000);
     ESP.restart();
   }
 }

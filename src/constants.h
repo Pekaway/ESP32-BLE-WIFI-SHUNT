@@ -27,6 +27,10 @@ String const HASS_BASE_TOPIC = "homeassistant/sensor/pekaway_shunt/";
 constexpr uint16_t RESET_WINDOW_MS = 30 * 1000;
 constexpr uint8_t RESET_THRESHOLD = 3;
 
+// NeoPixel constants
+constexpr uint8_t PIXEL_COUNT = 1;
+constexpr uint8_t PIXEL_PIN = 4;
+
 // Other constants
 constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";

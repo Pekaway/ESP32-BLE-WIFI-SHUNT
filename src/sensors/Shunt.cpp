@@ -49,7 +49,7 @@ float Shunt::getPower() { return ina.getBusMicroWatts(0) / 1000000.0; }
 
 float Shunt::getStateOfCharge() const { return calculateStateOfCharge(); }
 
-void Shunt::setMaxCapacity(const uint32_t ampHours) {
+void Shunt::setMaxCapacity(uint32_t const ampHours) {
   maxCapacityMilliAmpMs = ampHours * 60LL * 60LL * 1000LL * 1000LL;
 
   ConfigManager& config = ConfigManager::getInstance();
@@ -94,15 +94,14 @@ uint32_t Shunt::getMaxCapacity() const { return maxCapacityMilliAmpMs / (60LL * 
 bool Shunt::loadConfig() {
   ConfigManager& config = ConfigManager::getInstance();
 
-  const uint32_t maxCapacity = config.get<int>(ConfigKey::MAXIMUM_AMPS, 100);  // Default 100Ah
+  uint32_t const maxCapacity = config.get<int>(ConfigKey::MAXIMUM_AMPS, 100);  // Default 100Ah
   maxCapacityMilliAmpMs = static_cast<int64_t>(maxCapacity) * 60LL * 60LL * 1000LL * 1000LL;
 
-  const int socPercentage = config.get<int>(ConfigKey::CURRENT_SOC, config.get<int>(ConfigKey::INITIAL_SOC));
+  int const socPercentage = config.get<int>(ConfigKey::CURRENT_SOC, config.get<int>(ConfigKey::INITIAL_SOC));
   currentCapacityMilliAmpMs = maxCapacityMilliAmpMs / 100 * socPercentage;
 
   if (config.hasKey(ConfigKey::CURRENT_CAPACITY_MAMS)) {
-    auto const capacityStr = config.get<char const*>(ConfigKey::CURRENT_CAPACITY_MAMS);
-    currentCapacityMilliAmpMs = strtoll(capacityStr, nullptr, 10);
+    currentCapacityMilliAmpMs = config.get<int>(ConfigKey::CURRENT_CAPACITY_MAMS);
   }
 
   fullChargeVoltage = config.get<float>(ConfigKey::FULL_CHARGE_VOLTAGE);
@@ -124,10 +123,7 @@ bool Shunt::saveStateToConfig() {
   int const socPercentage = static_cast<int>(calculateStateOfCharge());
   config.set(ConfigKey::CURRENT_SOC, socPercentage);
 
-  // store current capacity in milliamp-milliseconds to preserve precision
-  char capacityStr[32];
-  snprintf(capacityStr, sizeof(capacityStr), "%lld", currentCapacityMilliAmpMs);
-  config.set(ConfigKey::CURRENT_CAPACITY_MAMS, capacityStr);
+  config.set(ConfigKey::CURRENT_CAPACITY_MAMS, currentCapacityMilliAmpMs);
 
   bool const result = config.saveConfig();
 
@@ -221,7 +217,7 @@ void Shunt::clampStateOfCharge() {
   }
 }
 
-void Shunt::setFullChargeVoltage(const float voltage) {
+void Shunt::setFullChargeVoltage(float const voltage) {
   ConfigManager& config = ConfigManager::getInstance();
   fullChargeVoltage = voltage;
   config.set<float>(ConfigKey::FULL_CHARGE_VOLTAGE, voltage);
@@ -232,7 +228,7 @@ void Shunt::setFullChargeVoltage(const float voltage) {
   logger.info(message);
 }
 
-void Shunt::setFullChargeCurrent(const float current) {
+void Shunt::setFullChargeCurrent(float const current) {
   ConfigManager& config = ConfigManager::getInstance();
   fullChargeCurrent = current;
   config.set<float>(ConfigKey::FULL_CHARGE_CURRENT, current);
@@ -243,7 +239,7 @@ void Shunt::setFullChargeCurrent(const float current) {
   logger.info(message);
 }
 
-void Shunt::setFullChargeDuration(const uint32_t minutes) {
+void Shunt::setFullChargeDuration(uint32_t const minutes) {
   ConfigManager& config = ConfigManager::getInstance();
   fullChargeDuration = minutes * 60 * 1000;  // Convert minutes to ms
   config.set<uint32_t>(ConfigKey::FULL_CHARGE_DURATION, minutes);

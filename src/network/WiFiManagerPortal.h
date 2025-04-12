@@ -16,6 +16,7 @@ class WiFiManagerPortal {
   void handle();
   static String getIp() { return WiFi.localIP().toString(); }
   static String getSSID() { return WiFi.SSID(); }
+  void reset();
 
  private:
   WiFiManagerPortal();

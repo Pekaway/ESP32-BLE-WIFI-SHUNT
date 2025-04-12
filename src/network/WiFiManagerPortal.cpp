@@ -35,6 +35,12 @@ void WiFiManagerPortal::begin() {
   setupPortal();
 }
 
+void WiFiManagerPortal::reset() {
+  logger.info("Resetting WiFiManager portal...");
+  wifiManager.resetSettings();
+  logger.info("WiFiManager portal reset");
+}
+
 void WiFiManagerPortal::handle() { wifiManager.process(); }
 
 void WiFiManagerPortal::setupPortal() {

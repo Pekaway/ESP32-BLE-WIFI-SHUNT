@@ -5,6 +5,7 @@
 #include <network/WiFiManagerPortal.h>
 #include <sensors/Shunt.h>
 #include <utils/ConfigManager.h>
+#include <utils/ResetManager.h>
 #include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 #include <Logger.h>
@@ -17,6 +18,7 @@ MQTTManager& mqttManager = MQTTManager::getInstance();
 WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
 CallbackHandler& callbackHandler = CallbackHandler::getInstance();
 Shunt& shunt = Shunt::getInstance();
+ResetManager& resetManager = ResetManager::getInstance();
 Adafruit_NeoPixel pixels(1, 4, NEO_GRB + NEO_KHZ800);
 
 BLECharacteristic* shuntStatusChar;
@@ -31,7 +33,7 @@ void setup() {
   logger.info("Starting setup...");
 
   config.init();
-
+  resetManager.init();
   callbackHandler.init();
 
   if (Shunt& shunt = Shunt::getInstance(); !shunt.init()) {
@@ -142,6 +144,8 @@ bool setupAllowed = true;
 
 void loop() {
   unsigned long const currentTime = millis();
+
+  resetManager.handle();
 
   if (callbackHandler.isSetupAllowed() && startUpTime + SETUP_TIME < currentTime) {
     callbackHandler.closeSetup();

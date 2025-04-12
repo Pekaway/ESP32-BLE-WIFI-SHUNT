@@ -14,6 +14,12 @@ auto constexpr WIFI_CHAR_UUID = "785840ec-f07e-495c-a9e6-e268398ebdd6";
 constexpr uint32_t SHUNT_MICRO_OHM = 375;
 constexpr uint16_t SHUNT_MAXIMUM_AMPS = 1022;
 
+// Battery constants
+constexpr uint32_t SHUNT_MAX_CAPACITY = 100; //
+constexpr uint32_t SHUNT_INITIAL_SOC = 100; // %
+constexpr auto AUTO_SAVE_INTERVAL = 30; // s
+constexpr uint8_t SHUNT_CHARGE_EFFIENCY = 100; // %
+
 // MQTT constants
 String const HASS_BASE_TOPIC = "homeassistant/sensor/pekaway_shunt/";
 

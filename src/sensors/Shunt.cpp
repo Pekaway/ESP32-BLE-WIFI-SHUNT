@@ -97,17 +97,17 @@ bool Shunt::loadConfig() {
   const uint32_t maxCapacity = config.get<int>(ConfigKey::MAXIMUM_AMPS, 100);  // Default 100Ah
   maxCapacityMilliAmpMs = static_cast<int64_t>(maxCapacity) * 60LL * 60LL * 1000LL * 1000LL;
 
-  const int socPercentage = config.get<int>(ConfigKey::CURRENT_SOC, config.get<int>(ConfigKey::INITIAL_SOC, 80));
+  const int socPercentage = config.get<int>(ConfigKey::CURRENT_SOC, config.get<int>(ConfigKey::INITIAL_SOC));
   currentCapacityMilliAmpMs = maxCapacityMilliAmpMs / 100 * socPercentage;
 
   if (config.hasKey(ConfigKey::CURRENT_CAPACITY_MAMS)) {
-    auto const capacityStr = config.get<char const*>(ConfigKey::CURRENT_CAPACITY_MAMS, "0");
+    auto const capacityStr = config.get<char const*>(ConfigKey::CURRENT_CAPACITY_MAMS);
     currentCapacityMilliAmpMs = strtoll(capacityStr, nullptr, 10);
   }
 
-  fullChargeVoltage = config.get<float>(ConfigKey::FULL_CHARGE_VOLTAGE, 14.2);
-  fullChargeCurrent = config.get<float>(ConfigKey::FULL_CHARGE_CURRENT, 4.0);
-  fullChargeDuration = config.get<uint32_t>(ConfigKey::FULL_CHARGE_DURATION, 3) * 60 * 1000;
+  fullChargeVoltage = config.get<float>(ConfigKey::FULL_CHARGE_VOLTAGE);
+  fullChargeCurrent = config.get<float>(ConfigKey::FULL_CHARGE_CURRENT);
+  fullChargeDuration = config.get<uint32_t>(ConfigKey::FULL_CHARGE_DURATION) * 60 * 1000;
 
   lastStoredCapacityMilliAmpMs = currentCapacityMilliAmpMs;
 

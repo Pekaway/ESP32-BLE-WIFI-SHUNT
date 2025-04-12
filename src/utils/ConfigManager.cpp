@@ -1,5 +1,7 @@
 #include "ConfigManager.h"
 
+#include <constants.h>
+
 ConfigManager& ConfigManager::getInstance() {
   static ConfigManager instance;
   return instance;
@@ -121,12 +123,19 @@ bool ConfigManager::readConfigFile() {
 void ConfigManager::createDefaultConfig() {
   jsonDoc.clear();
 
-  jsonDoc[ConfigKeys::toString(ConfigKey::DEVICE_NAME)] = "PekawayShunt";
-  jsonDoc[ConfigKeys::toString(ConfigKey::MAX_CAPACITY)] = 100;
-  jsonDoc[ConfigKeys::toString(ConfigKey::INITIAL_SOC)] = 80;
-  jsonDoc[ConfigKeys::toString(ConfigKey::SHUNT_MICRO_OHM)] = 375;
-  jsonDoc[ConfigKeys::toString(ConfigKey::MAXIMUM_AMPS)] = 1022;
-  jsonDoc[ConfigKeys::toString(ConfigKey::AUTO_SAVE_INTERVAL)] = 30;
+  jsonDoc[ConfigKeys::toString(ConfigKey::DEVICE_NAME)] = BLE_SERVER_NAME;
+  jsonDoc[ConfigKeys::toString(ConfigKey::INITIAL_SOC)] = SHUNT_INITIAL_SOC;
+  jsonDoc[ConfigKeys::toString(ConfigKey::SHUNT_MICRO_OHM)] = SHUNT_MICRO_OHM;
+  jsonDoc[ConfigKeys::toString(ConfigKey::MAXIMUM_AMPS)] = SHUNT_MAXIMUM_AMPS;
+  jsonDoc[ConfigKeys::toString(ConfigKey::AUTO_SAVE_INTERVAL)] = AUTO_SAVE_INTERVAL;
   jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_USER)] = "";
   jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_PASSWORD)] = "";
+  jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_SERVER)] = "";
+  jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_PORT)] = 1883;
+  jsonDoc[ConfigKeys::toString(ConfigKey::CURRENT_SOC)] = 0;
+  jsonDoc[ConfigKeys::toString(ConfigKey::CURRENT_CAPACITY_MAMS)] = 0;
+  jsonDoc[ConfigKeys::toString(ConfigKey::CHARGE_EFFICIENCY)] = 100;
+  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_VOLTAGE)] = 0;
+  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_VOLTAGE)] = 0;
+  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_DURATION)] = 0;
 }

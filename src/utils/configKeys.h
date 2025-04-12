@@ -6,7 +6,6 @@
 
 enum class ConfigKey {
   DEVICE_NAME,
-  MAX_CAPACITY,
   INITIAL_SOC,
   SHUNT_MICRO_OHM,
   MAXIMUM_AMPS,
@@ -28,7 +27,6 @@ class ConfigKeys {
   static char const* toString(ConfigKey const key) {
     static std::unordered_map<ConfigKey, char const*> const keyToStringMap = {
         {ConfigKey::DEVICE_NAME, "device_name"},
-        {ConfigKey::MAX_CAPACITY, "max_capacity"},
         {ConfigKey::INITIAL_SOC, "initial_soc"},
         {ConfigKey::SHUNT_MICRO_OHM, "shunt_micro_ohm"},
         {ConfigKey::MAXIMUM_AMPS, "maximum_amps"},

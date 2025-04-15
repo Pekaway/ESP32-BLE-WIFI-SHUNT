@@ -31,9 +31,6 @@ constexpr uint8_t RESET_THRESHOLD = 3;
 constexpr uint8_t PIXEL_COUNT = 1;
 constexpr uint8_t PIXEL_PIN = 4;
 
-// External Battery
-constexpr uint8_t EXTERNAL_BATTERY_PIN = 10;
-
 // Other constants
 constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";

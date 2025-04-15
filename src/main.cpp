@@ -3,11 +3,11 @@
 #include "network/MQTTManager.h"
 #include <network/BluetoothManager.h>
 #include <network/WiFiManagerPortal.h>
+#include <sensors/ExternalBattery.h>
 #include <sensors/Shunt.h>
 #include <utils/ConfigManager.h>
 #include <utils/NeoPixel.h>
 #include <utils/ResetManager.h>
-#include <Adafruit_NeoPixel.h>
 #include <Arduino.h>
 #include <Logger.h>
 
@@ -21,6 +21,7 @@ Shunt& shunt = Shunt::getInstance();
 ResetManager& resetManager = ResetManager::getInstance();
 NeoPixel& pixel = NeoPixel::getInstance();
 CallbackHandler& callbackHandler = CallbackHandler::getInstance();
+ExternalBattery& externalBattery = ExternalBattery::getInstance();
 
 BLECharacteristic* shuntStatusChar;
 BLECharacteristic* batteryConfigChar;
@@ -36,6 +37,7 @@ void setup() {
   config.init();
   resetManager.init();
   callbackHandler.init();
+  externalBattery.init();
 
   if (Shunt& shunt = Shunt::getInstance(); !shunt.init()) {
     logger.critical("Failed to initialize Shunt");

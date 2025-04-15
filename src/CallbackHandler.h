@@ -2,10 +2,10 @@
 #define CALLBACKHANDLER_H
 
 #include <network/WiFiManagerPortal.h>
+#include <sensors/ExternalBattery.h>
 #include <sensors/Shunt.h>
 #include <utils/ConfigManager.h>
 #include <Arduino.h>
-#include <ArduinoJson.h>
 #include <BLECharacteristic.h>
 #include <Logger.h>
 
@@ -37,6 +37,7 @@ class CallbackHandler {
   Shunt& shunt = Shunt::getInstance();
   ConfigManager& config = ConfigManager::getInstance();
   WiFiManagerPortal& portal = WiFiManagerPortal::getInstance();
+  ExternalBattery& externalBattery = ExternalBattery::getInstance();
   bool setupAllowed = true;
 
   bool isAllowed();

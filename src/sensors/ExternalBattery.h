@@ -1,8 +1,9 @@
 #ifndef EXTERNAL_BATTERY_H
 #define EXTERNAL_BATTERY_H
 
+#include <driver/adc.h>
 #include <Arduino.h>
-#include <constants.h>
+#include <Logger.h>
 
 class ExternalBattery {
  public:
@@ -14,19 +15,34 @@ class ExternalBattery {
     return instance;
   }
 
-  static void init() { pinMode(EXTERNAL_BATTERY_PIN, INPUT); }
+  void init() {
+    adc2_config_channel_atten(ADC2_CHANNEL_0, ADC_ATTEN_DB_12);
+    logger.info("ADC2 channel configured for external battery voltage measurement");
+  }
 
-  static float readVoltage() {
-    int const rawValue = analogRead(EXTERNAL_BATTERY_PIN);
-    return (rawValue * REFERENCE_VOLTAGE) / ADC_RESOLUTION;
+  float readVoltage() {
+    int rawValue = 0;
+    if (esp_err_t const result = adc2_get_raw(ADC2_CHANNEL_0, ADC_WIDTH_BIT_12, &rawValue); result != ESP_OK) {
+      logger.critical("ADC read failed!");
+      return 0.0;
+    }
+
+    // see also
+    // https://docs.espressif.com/projects/esp-idf/en/v5.4.1/esp32c3/api-reference/peripherals/adc_continuous.html
+    return (rawValue * Vmax) / Dmax;
   }
 
  private:
-  ExternalBattery() = default;
+  ExternalBattery() {
+    logger.prependLog = [] { return "EXTERNAL_BATTERY"; };
+  }
   ~ExternalBattery() = default;
 
-  static constexpr float REFERENCE_VOLTAGE = 5.0;
-  static constexpr int ADC_RESOLUTION = 1023;
+  static constexpr float Vmax = 5.0;
+  // 2^12 = 4096
+  static constexpr float Dmax = 4096.0;
+
+  Logger logger = Logger(Serial);
 };
 
 #endif  // EXTERNAL_BATTERY_H

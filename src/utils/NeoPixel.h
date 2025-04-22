@@ -12,7 +12,7 @@ class NeoPixel {
   static NeoPixel& getInstance();
 
   void begin();
-  void full();
+  void blue();
   void red();
   void handle();
   void closeSetup() { setUpAllowed = false; }

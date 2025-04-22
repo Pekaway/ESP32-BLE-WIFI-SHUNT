@@ -14,9 +14,9 @@ NeoPixel& NeoPixel::getInstance() {
   return instance;
 }
 
-void NeoPixel::full() {
+void NeoPixel::blue() {
   pixel.setBrightness(255);
-  pixel.setPixelColor(0, Adafruit_NeoPixel::Color(255, 255, 255));
+  pixel.setPixelColor(0, Adafruit_NeoPixel::Color(0, 0, 255));
   pixel.show();
 }
 
@@ -28,7 +28,7 @@ void NeoPixel::red() {
 
 void NeoPixel::handle() {
   if (setUpAllowed) {
-    full();
+    blue();
     return;
   }
 

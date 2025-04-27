@@ -63,6 +63,10 @@ void setup() {
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
   btManager.startAdvertising();
+  callbackHandler.updateBatteryConfigCharacteristic(batteryConfigChar);
+  callbackHandler.updateShuntStatus(shuntStatusChar);
+  CallbackHandler::updateWifiConfigCharacteristic(wifiConfigChar);
+  callbackHandler.updateMqttConfigCharacteristic(mqttConfigChar);
 
   mqttManager.begin();
 

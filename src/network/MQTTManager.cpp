@@ -1,4 +1,5 @@
 #include "MQTTManager.h"
+#include <sensors/ExternalBattery.h>
 #include <utils/ConfigManager.h>
 #include <WiFi.h>
 
@@ -27,17 +28,20 @@ void MQTTManager::publishShuntValues() {
   }
 
   Shunt& shunt = Shunt::getInstance();
+  ExternalBattery& externalBattery = ExternalBattery::getInstance();
   auto const voltage = shunt.getBusVoltage();
   auto const current = shunt.getBusCurrent();
   auto const power = shunt.getPower();
   auto const soc = shunt.getStateOfCharge();
   auto const maxCapacity = shunt.getMaxCapacity();
+  auto const externalVoltage = externalBattery.readVoltage();
 
   client.publish((HASS_SENSOR_BASE_TOPIC + "voltage/state").c_str(), String(voltage).c_str());
   client.publish((HASS_SENSOR_BASE_TOPIC + "current/state").c_str(), String(current).c_str());
   client.publish((HASS_SENSOR_BASE_TOPIC + "power/state").c_str(), String(power).c_str());
   client.publish((HASS_SENSOR_BASE_TOPIC + "soc/state").c_str(), String(soc).c_str());
   client.publish((HASS_SENSOR_BASE_TOPIC + "max_capacity/state").c_str(), String(maxCapacity).c_str());
+  client.publish((HASS_SENSOR_BASE_TOPIC + "external_voltage/state").c_str(), String(externalVoltage).c_str());
 
   client.publish((HASS_NUMER_BASE_TOPIC + CHARGE_EFFICIENCY_TOPIC + "/state").c_str(),
                  String(shunt.getChargeEfficiency()).c_str());
@@ -64,6 +68,12 @@ void MQTTManager::registerHomeAssistantSensors() {
 
   publishSensorConfig(
       {.id = "max_capacity", .name = "Maximum Capacity", .unit = "Ah", .deviceClass = "", .icon = "mdi:battery-high"});
+
+  publishSensorConfig({.id = "external_voltage",
+                       .name = "External Voltage",
+                       .unit = "V",
+                       .deviceClass = "voltage",
+                       .icon = "mdi:current-ac"});
 
   publishNumberConfig({.id = "charge_efficiency",
                        .name = "Charge Efficiency",

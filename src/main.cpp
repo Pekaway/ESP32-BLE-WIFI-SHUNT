@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "network/MQTTManager.h"
 #include <network/BluetoothManager.h>
+#include <network/UartManager.h>
 #include <network/WiFiManagerPortal.h>
 #include <sensors/ExternalBattery.h>
 #include <sensors/Shunt.h>

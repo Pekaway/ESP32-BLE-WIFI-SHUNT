@@ -53,7 +53,7 @@ void WiFiManagerPortal::setupPortal() {
   wifiManager.addParameter(custom_mqtt_port);
 
   wifiManager.setConfigPortalBlocking(false);
-  wifiManager.setConfigPortalTimeout(60);
+  wifiManager.setConnectTimeout(1);
 
   if (!wifiManager.autoConnect("Pekaway Shunt")) {
     logger.critical("Failed to connect to WiFi");

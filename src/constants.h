@@ -31,6 +31,12 @@ constexpr uint8_t RESET_THRESHOLD = 3;
 constexpr uint8_t PIXEL_COUNT = 1;
 constexpr uint8_t PIXEL_PIN = 4;
 
+// Uart
+constexpr uint8_t UART_RX_PIN = 27;
+constexpr uint8_t UART_TX_PIN = 28;
+constexpr uint32_t UART_BAUD_RATE = 19200;
+constexpr byte UART_PID = 0x111;
+
 // Other constants
 constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";

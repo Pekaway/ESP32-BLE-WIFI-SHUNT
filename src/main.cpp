@@ -2,8 +2,6 @@
 #include "constants.h"
 #include "network/MQTTManager.h"
 #include <network/BluetoothManager.h>
-#include <network/UartManager.h>
-#include <network/WiFiManagerPortal.h>
 #include <sensors/ExternalBattery.h>
 #include <sensors/Shunt.h>
 #include <utils/ConfigManager.h>
@@ -11,13 +9,13 @@
 #include <utils/ResetManager.h>
 #include <Arduino.h>
 #include <Logger.h>
+#include <WiFi.h>
 
 Logger logger(Serial);
 
 ConfigManager& config = ConfigManager::getInstance();
 BluetoothManager& btManager = BluetoothManager::getInstance();
 MQTTManager& mqttManager = MQTTManager::getInstance();
-WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
 Shunt& shunt = Shunt::getInstance();
 ResetManager& resetManager = ResetManager::getInstance();
 NeoPixel& pixel = NeoPixel::getInstance();
@@ -40,6 +38,11 @@ void setup() {
   callbackHandler.init();
   externalBattery.init();
 
+  WiFiClass::mode(WIFI_AP_STA);
+  auto const ssid = config.get<String>(ConfigKey::WIFI_SSID);
+  auto const password = config.get<String>(ConfigKey::WIFI_PASSWORD);
+  WiFi.begin(ssid, password);
+
   if (Shunt& shunt = Shunt::getInstance(); !shunt.init()) {
     logger.critical("Failed to initialize Shunt");
     return;
@@ -61,7 +64,6 @@ void setup() {
 
   btManager.startAdvertising();
 
-  wifiPortal.begin();
   mqttManager.begin();
 
   logger.info("Setup complete");
@@ -92,7 +94,6 @@ void loop() {
 
   shunt.update();
 
-  wifiPortal.handle();
   mqttManager.handle();
   btManager.handle();
   pixel.handle();

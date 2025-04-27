@@ -1,7 +1,6 @@
 #ifndef CALLBACKHANDLER_H
 #define CALLBACKHANDLER_H
 
-#include <network/WiFiManagerPortal.h>
 #include <sensors/ExternalBattery.h>
 #include <sensors/Shunt.h>
 #include <utils/ConfigManager.h>
@@ -36,7 +35,6 @@ class CallbackHandler {
   Logger logger = Logger(Serial);
   Shunt& shunt = Shunt::getInstance();
   ConfigManager& config = ConfigManager::getInstance();
-  WiFiManagerPortal& portal = WiFiManagerPortal::getInstance();
   ExternalBattery& externalBattery = ExternalBattery::getInstance();
   bool setupAllowed = true;
 

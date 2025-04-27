@@ -1,5 +1,4 @@
 #include "ConfigManager.h"
-
 #include <constants.h>
 
 ConfigManager& ConfigManager::getInstance() {
@@ -59,7 +58,7 @@ bool ConfigManager::resetToDefaults() {
   return saveConfig();
 }
 
-bool ConfigManager::hasKey(const ConfigKey key) {
+bool ConfigManager::hasKey(ConfigKey const key) {
   char const* keyStr = ConfigKeys::toString(key);
   return jsonDoc[keyStr].is<JsonVariant>();
 }
@@ -86,7 +85,7 @@ bool ConfigManager::writeConfigFile() {
     return false;
   }
 
-  const size_t bytesWritten = serializeJson(jsonDoc, file);
+  size_t const bytesWritten = serializeJson(jsonDoc, file);
   file.close();
 
   if (bytesWritten == 0) {
@@ -109,7 +108,7 @@ bool ConfigManager::readConfigFile() {
     return false;
   }
 
-  const DeserializationError error = deserializeJson(jsonDoc, file);
+  DeserializationError const error = deserializeJson(jsonDoc, file);
   file.close();
 
   if (error) {
@@ -138,4 +137,6 @@ void ConfigManager::createDefaultConfig() {
   jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_VOLTAGE)] = 0;
   jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_VOLTAGE)] = 0;
   jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_DURATION)] = 0;
+  jsonDoc[ConfigKeys::toString(ConfigKey::WIFI_PASSWORD)] = nullptr;
+  jsonDoc[ConfigKeys::toString(ConfigKey::WIFI_SSID)] = nullptr;
 }

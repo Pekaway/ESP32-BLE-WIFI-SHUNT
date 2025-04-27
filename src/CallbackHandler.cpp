@@ -3,7 +3,6 @@
 #include <network/MQTTManager.h>
 #include <utils/ConfigManager.h>
 #include <WiFi.h>
-#include <WiFiManager.h>
 
 CallbackHandler& CallbackHandler::getInstance() {
   static CallbackHandler instance;
@@ -94,10 +93,13 @@ void CallbackHandler::handleWiFi(String const& value) {
     String const ssid = doc["ssid"];
     String const password = doc["password"];
 
+    config.set(ConfigKey::WIFI_SSID, ssid);
+    config.set(ConfigKey::WIFI_PASSWORD, password);
+    config.saveConfig();
+
     WiFi.disconnect();
-    WiFi.persistent(true);
-    WiFi.begin(ssid, password);
     WiFi.persistent(false);
+    WiFi.begin(ssid, password);
 
     logger.info("WiFi SSID updated");
   }
@@ -226,8 +228,8 @@ void CallbackHandler::updateBatteryConfigCharacteristic(BLECharacteristic* batte
 
 void CallbackHandler::updateWifiConfigCharacteristic(BLECharacteristic* wifiConfigChar) {
   JsonDocument doc;
-  doc["ip"] = WiFiManagerPortal::getIp();
-  doc["ssid"] = WiFiManagerPortal::getSSID();
+  doc["ip"] = WiFi.localIP();
+  doc["ssid"] = WiFi.SSID();
 
   String jsonString;
   serializeJson(doc, jsonString);
@@ -241,6 +243,7 @@ void CallbackHandler::updateMqttConfigCharacteristic(BLECharacteristic* mqttConf
   doc["port"] = config.get<uint16_t>(ConfigKey::MQTT_PORT);
   doc["user"] = config.get<String>(ConfigKey::MQTT_USER);
   doc["password"] = config.get<String>(ConfigKey::MQTT_PASSWORD);
+  doc["connected"] = MQTTManager::getInstance().isConnected();
 
   String jsonString;
   serializeJson(doc, jsonString);

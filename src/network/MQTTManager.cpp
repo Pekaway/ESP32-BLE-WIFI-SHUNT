@@ -109,7 +109,6 @@ void MQTTManager::registerHomeAssistantSensors() {
 
 boolean MQTTManager::connect(bool const forceReconnect) {
   if (!WiFi.isConnected()) {
-    logger.warning("WiFi is not connected, cannot connect to MQTT broker");
     return false;
   }
 

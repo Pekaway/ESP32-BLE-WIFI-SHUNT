@@ -2,7 +2,6 @@
 #include "../constants.h"
 #include "ConfigManager.h"
 #include "NeoPixel.h"
-#include <network/WiFiManagerPortal.h>
 
 ResetManager& ResetManager::getInstance() {
   static ResetManager instance;
@@ -49,8 +48,6 @@ void ResetManager::checkResetCondition() {
 
     ConfigManager& config = ConfigManager::getInstance();
     config.resetToDefaults();
-    WiFiManagerPortal& wifiPortal = WiFiManagerPortal::getInstance();
-    wifiPortal.reset();
     resetCounters();
 
     delay(5000);

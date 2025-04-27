@@ -20,6 +20,7 @@ class MQTTManager {
   void publishShuntValues();
   void registerHomeAssistantSensors();
   boolean connect(bool forceReconnect = false);
+  bool isConnected() { return client.connected(); }
 
  private:
   MQTTManager();

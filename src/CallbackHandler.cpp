@@ -230,6 +230,7 @@ void CallbackHandler::updateWifiConfigCharacteristic(BLECharacteristic* wifiConf
   JsonDocument doc;
   doc["ip"] = WiFi.localIP();
   doc["ssid"] = WiFi.SSID();
+  doc["rssi"] = WiFi.RSSI();
 
   String jsonString;
   serializeJson(doc, jsonString);

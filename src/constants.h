@@ -11,7 +11,7 @@ auto constexpr MQTT_CONFIG_CHAR_UUID = "2f681ce5-f2b0-4034-b714-d87156af4b5a";
 auto constexpr WIFI_CHAR_UUID = "785840ec-f07e-495c-a9e6-e268398ebdd6";
 
 // Shunt constants
-constexpr uint32_t SHUNT_MICRO_OHM = 60;
+constexpr uint32_t SHUNT_MICRO_OHM = 100;
 constexpr uint16_t SHUNT_MAXIMUM_AMPS = 1022;
 
 // Battery constants

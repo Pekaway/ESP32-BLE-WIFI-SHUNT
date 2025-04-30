@@ -41,6 +41,6 @@ constexpr byte UART_PID = 0x111;
 constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";
 auto constexpr SETUP_TIME = 10 * 60 * 1000;
-constexpr unsigned long SHUNT_UPDATE_INTERVAL = 10000;
+auto constexpr SHUNT_UPDATE_INTERVAL = 3 * 1000;
 
 #endif  // CONSTANTS_H

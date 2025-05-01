@@ -22,6 +22,7 @@ enum class ConfigKey {
   FULL_CHARGE_DURATION,
   WIFI_SSID,
   WIFI_PASSWORD,
+  LED_ENABLED,
 };
 
 class ConfigKeys {
@@ -44,7 +45,8 @@ class ConfigKeys {
         {ConfigKey::FULL_CHARGE_CURRENT, "full_charge_current"},
         {ConfigKey::FULL_CHARGE_DURATION, "full_charge_duration"},
         {ConfigKey::WIFI_SSID, "wifi_ssid"},
-        {ConfigKey::WIFI_PASSWORD, "wifi_password"}};
+        {ConfigKey::WIFI_PASSWORD, "wifi_password"},
+        {ConfigKey::LED_ENABLED, "led_enabled"}};
 
     if (auto const it = keyToStringMap.find(key); it != keyToStringMap.end()) {
       return it->second;

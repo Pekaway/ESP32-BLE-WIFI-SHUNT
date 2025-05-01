@@ -22,11 +22,13 @@ class CallbackHandler {
   void handleMQTTConfig(String const& value);
   void handleWiFi(String const& value);
   void handleBatteryConfig(String const& value);
+  void handleShuntConfig(String const& value);
 
   void updateShuntStatus(BLECharacteristic* shuntStatusChar) const;
   void updateBatteryConfigCharacteristic(BLECharacteristic* batteryConfigChar) const;
   static void updateWifiConfigCharacteristic(BLECharacteristic* wifiConfigChar);
   void updateMqttConfigCharacteristic(BLECharacteristic* mqttConfigChar) const;
+  void updateShuntConfigCharacteristic(BLECharacteristic* shuntConfigChar) const;
 
  private:
   CallbackHandler();

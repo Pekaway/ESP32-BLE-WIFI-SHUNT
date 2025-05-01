@@ -139,4 +139,5 @@ void ConfigManager::createDefaultConfig() {
   jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_DURATION)] = 0;
   jsonDoc[ConfigKeys::toString(ConfigKey::WIFI_PASSWORD)] = nullptr;
   jsonDoc[ConfigKeys::toString(ConfigKey::WIFI_SSID)] = nullptr;
+  jsonDoc[ConfigKeys::toString(ConfigKey::LED_ENABLED)] = true;
 }

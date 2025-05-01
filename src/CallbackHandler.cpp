@@ -2,6 +2,7 @@
 #include "sensors/Shunt.h"
 #include <network/MQTTManager.h>
 #include <utils/ConfigManager.h>
+#include <utils/NeoPixel.h>
 #include <WiFi.h>
 
 CallbackHandler& CallbackHandler::getInstance() {
@@ -120,10 +121,6 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
     return;
   }
 
-  String jsonStr;
-  serializeJson(doc, jsonStr);
-  logger.info(("Parsed JSON: " + jsonStr).c_str());
-
   ConfigManager& config = ConfigManager::getInstance();
   Shunt& shunt = Shunt::getInstance();
 
@@ -194,6 +191,33 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
   logger.info("Battery configuration updated");
 }
 
+void CallbackHandler::handleShuntConfig(String const& value) {
+  logger.info("Received shunt configuration");
+  if (!isAllowed()) {
+    logger.warning("Setup no longer allowed - ignoring shunt configuration");
+    return;
+  }
+
+  JsonDocument doc;
+  DeserializationError const error = deserializeJson(doc, value);
+
+  if (error) {
+    logger.critical(("Shunt JSON parsing failed: " + String(error.c_str())).c_str());
+    return;
+  }
+
+  if (doc["ledEnabled"].is<bool>()) {
+    bool const ledEnabled = doc["ledEnabled"];
+    config.set(ConfigKey::LED_ENABLED, ledEnabled);
+  }
+
+  config.saveConfig();
+
+  NeoPixel::getInstance().handle();
+
+  logger.info("Shunt configuration updated");
+}
+
 void CallbackHandler::updateShuntStatus(BLECharacteristic* shuntStatusChar) const {
   JsonDocument doc;
   doc["voltage"] = shunt.getBusVoltage();
@@ -250,4 +274,14 @@ void CallbackHandler::updateMqttConfigCharacteristic(BLECharacteristic* mqttConf
   serializeJson(doc, jsonString);
 
   mqttConfigChar->setValue(jsonString.c_str());
+}
+
+void CallbackHandler::updateShuntConfigCharacteristic(BLECharacteristic* shuntConfigChar) const {
+  JsonDocument doc;
+  doc["ledEnabled"] = config.get<bool>(ConfigKey::LED_ENABLED);
+
+  String json_string;
+  serializeJson(doc, json_string);
+
+  shuntConfigChar->setValue(json_string.c_str());
 }

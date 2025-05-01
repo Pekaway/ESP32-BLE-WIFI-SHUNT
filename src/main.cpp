@@ -26,6 +26,7 @@ BLECharacteristic* shuntStatusChar;
 BLECharacteristic* batteryConfigChar;
 BLECharacteristic* wifiConfigChar;
 BLECharacteristic* mqttConfigChar;
+BLECharacteristic* shuntConfigChar;
 
 unsigned long startUpTime = millis();
 
@@ -61,12 +62,16 @@ void setup() {
   wifiConfigChar = btManager.createWriteCharacteristic(
       WIFI_CHAR_UUID, [](String const& value) { callbackHandler.handleWiFi(value); },
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+  shuntConfigChar = btManager.createWriteCharacteristic(
+      SHUNT_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleShuntConfig(value); },
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
 
   btManager.startAdvertising();
   callbackHandler.updateBatteryConfigCharacteristic(batteryConfigChar);
   callbackHandler.updateShuntStatus(shuntStatusChar);
   CallbackHandler::updateWifiConfigCharacteristic(wifiConfigChar);
   callbackHandler.updateMqttConfigCharacteristic(mqttConfigChar);
+  callbackHandler.updateShuntConfigCharacteristic(shuntConfigChar);
 
   mqttManager.begin();
 
@@ -92,6 +97,7 @@ void loop() {
     callbackHandler.updateShuntStatus(shuntStatusChar);
     CallbackHandler::updateWifiConfigCharacteristic(wifiConfigChar);
     callbackHandler.updateMqttConfigCharacteristic(mqttConfigChar);
+    callbackHandler.updateShuntConfigCharacteristic(shuntConfigChar);
 
     mqttManager.publishShuntValues();
   }

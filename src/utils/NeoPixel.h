@@ -1,5 +1,6 @@
 #ifndef NEOPIXEL_H
 #define NEOPIXEL_H
+#include "ConfigManager.h"
 #include <sensors/Shunt.h>
 #include <Adafruit_NeoPixel.h>
 #include <Logger.h>
@@ -16,6 +17,8 @@ class NeoPixel {
   void red();
   void handle();
   void closeSetup() { setUpAllowed = false; }
+  void enable();
+  void disable();
 
  private:
   NeoPixel();
@@ -23,6 +26,7 @@ class NeoPixel {
 
   Adafruit_NeoPixel pixel;
   Shunt& shunt = Shunt::getInstance();
+  ConfigManager& config = ConfigManager::getInstance();
   bool setUpAllowed = true;
 
   Logger logger = Logger(Serial);

@@ -15,6 +15,10 @@ NeoPixel& NeoPixel::getInstance() {
 }
 
 void NeoPixel::blue() {
+  if (!config.get<bool>(ConfigKey::LED_ENABLED)) {
+    return;
+  }
+
   pixel.setBrightness(255);
   pixel.setPixelColor(0, Adafruit_NeoPixel::Color(0, 0, 255));
   pixel.show();
@@ -27,6 +31,12 @@ void NeoPixel::red() {
 }
 
 void NeoPixel::handle() {
+  if (!config.get<bool>(ConfigKey::LED_ENABLED)) {
+    pixel.setBrightness(0);
+    pixel.show();
+    return;
+  }
+
   if (setUpAllowed) {
     blue();
     return;

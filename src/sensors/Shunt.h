@@ -14,15 +14,16 @@ class Shunt {
   bool init();
   void update();
 
-  float getBusVoltage();
-  float getBusCurrent();
-  float getPower();
+  double getBusVoltage();
+  double getBusCurrent();
+  double getPower();
   [[nodiscard]] float getStateOfCharge() const;
   [[nodiscard]] float getFullChargeVoltage() const { return fullChargeVoltage; }
   [[nodiscard]] float getFullChargeCurrent() const { return fullChargeCurrent; }
   [[nodiscard]] uint32_t getFullChargeDuration() const { return fullChargeDuration / (60 * 1000); }
-  [[nodiscard]] uint8_t getChargeEfficiency() const;
-  [[nodiscard]] float calculateStateOfCharge() const;
+  [[nodiscard]] double getChargeEfficiency() const;
+  [[nodiscard]] double calculateStateOfCharge() const;
+  double getTTGO();
 
   void setMaxCapacity(uint32_t ampHours);
   void setCurrentStateOfCharge(uint8_t percentage);
@@ -30,7 +31,7 @@ class Shunt {
   void setFullChargeVoltage(float voltage);
   void setFullChargeCurrent(float current);
   void setFullChargeDuration(uint32_t minutes);
-  [[nodiscard]] uint32_t getMaxCapacity() const;
+  [[nodiscard]] double getMaxCapacity() const;
 
  private:
   Shunt();

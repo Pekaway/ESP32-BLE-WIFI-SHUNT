@@ -38,14 +38,14 @@ bool Shunt::init() {
   return true;
 }
 
-float Shunt::getBusVoltage() { return ina.getBusMilliVolts(0) / 1000.0; }
+double Shunt::getBusVoltage() { return ina.getBusMilliVolts(0) / 1000.0; }
 
-float Shunt::getBusCurrent() {
+double Shunt::getBusCurrent() {
   // negative is charging, positive is discharging
-  return ina.getBusMicroAmps(0) / 1000000.0 * -1;
+  return ina.getBusMicroAmps(0) / 1000000.0 * -1.0;
 }
 
-float Shunt::getPower() { return ina.getBusMicroWatts(0) / 1000000.0; }
+double Shunt::getPower() { return ina.getBusMicroWatts(0) / 1000000.0; }
 
 float Shunt::getStateOfCharge() const { return calculateStateOfCharge(); }
 
@@ -87,9 +87,9 @@ void Shunt::setChargeEfficiency(uint8_t percentage) {
   logger.info(message);
 }
 
-uint8_t Shunt::getChargeEfficiency() const { return this->chargeEfficiency; }
+double Shunt::getChargeEfficiency() const { return this->chargeEfficiency; }
 
-uint32_t Shunt::getMaxCapacity() const { return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL); }
+double Shunt::getMaxCapacity() const { return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL); }
 
 bool Shunt::loadConfig() {
   ConfigManager& config = ConfigManager::getInstance();
@@ -154,9 +154,9 @@ void Shunt::update() {
     clampStateOfCharge();
   }
 
-  float const voltage = getBusVoltage();
-  float const current = getBusCurrent();
-  float const soc = calculateStateOfCharge();
+  auto const voltage = getBusVoltage();
+  auto const current = getBusCurrent();
+  auto const soc = calculateStateOfCharge();
 
   // Both conditions must be met:
   // 1. Voltage must be at or above threshold
@@ -201,10 +201,42 @@ void Shunt::update() {
   lastUpdateMillis = currentMillis;
 }
 
-float Shunt::calculateStateOfCharge() const {
+double Shunt::calculateStateOfCharge() const {
   if (maxCapacityMilliAmpMs <= 0) return 0;
 
-  return (static_cast<float>(currentCapacityMilliAmpMs) / static_cast<float>(maxCapacityMilliAmpMs)) * 100.0f;
+  return (currentCapacityMilliAmpMs / maxCapacityMilliAmpMs) * 100.0f;
+}
+
+double Shunt::getTTGO() {
+  double ttgo = 0.0;
+
+  if (float const busCurrent = getBusCurrent(); busCurrent < -0.01f) {
+    // Charging - calculate time to full
+    int64_t const remainingCapacity = maxCapacityMilliAmpMs - currentCapacityMilliAmpMs;
+
+    if (float const chargingCurrentMilliA = abs(busCurrent) * 1000.0f * (static_cast<float>(chargeEfficiency) / 100.0f);
+        chargingCurrentMilliA > 0) {
+      ttgo = static_cast<double>(remainingCapacity) / (chargingCurrentMilliA);
+      ttgo /= (60.0 * 60.0 * 1000.0);
+    } else {
+      ttgo = 9999.0;
+    }
+  } else if (busCurrent > 0.01f) {
+    // Discharging - calculate time remaining
+
+    if (float const dischargingCurrentMilliA = busCurrent * 1000.0f; dischargingCurrentMilliA > 0) {
+      ttgo = static_cast<double>(currentCapacityMilliAmpMs) / dischargingCurrentMilliA;
+      ttgo /= (60.0 * 60.0 * 1000.0);
+    } else {
+      ttgo = 9999.0;
+    }
+  } else {
+    // Current near zero - consider it infinite or N/A
+    ttgo = 9999.0;
+  }
+
+  // Convert hours to milliseconds for return value
+  return ttgo * 60.0 * 60.0 * 1000.0;
 }
 
 void Shunt::clampStateOfCharge() {

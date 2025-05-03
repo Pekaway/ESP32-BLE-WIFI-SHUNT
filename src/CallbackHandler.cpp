@@ -227,7 +227,7 @@ void CallbackHandler::updateShuntStatus(BLECharacteristic* shuntStatusChar) cons
   doc["chargeEfficiency"] = shunt.getChargeEfficiency();
   doc["time"] = millis();
   doc["externalBattery"] = externalBattery.readVoltage();
-
+  doc["ttgo"] = shunt.getTTGO();
   String statusJson;
   serializeJson(doc, statusJson);
   shuntStatusChar->setValue(statusJson.c_str());

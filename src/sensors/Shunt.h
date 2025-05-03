@@ -22,7 +22,7 @@ class Shunt {
   [[nodiscard]] float getFullChargeCurrent() const { return fullChargeCurrent; }
   [[nodiscard]] uint32_t getFullChargeDuration() const { return fullChargeDuration / (60 * 1000); }
   [[nodiscard]] double getChargeEfficiency() const;
-  [[nodiscard]] double calculateStateOfCharge() const;
+  [[nodiscard]] uint16_t calculateStateOfCharge() const;
   double getTTGO();
 
   void setMaxCapacity(uint32_t ampHours);
@@ -31,7 +31,7 @@ class Shunt {
   void setFullChargeVoltage(float voltage);
   void setFullChargeCurrent(float current);
   void setFullChargeDuration(uint32_t minutes);
-  [[nodiscard]] double getMaxCapacity() const;
+  [[nodiscard]] long long getMaxCapacity() const;
 
  private:
   Shunt();
@@ -46,7 +46,6 @@ class Shunt {
   int64_t maxCapacityMilliAmpMs = 0;
   int64_t currentCapacityMilliAmpMs = 0;
   int64_t lastStoredCapacityMilliAmpMs = 0;
-  int64_t capacityThresholdToStore = 360000000;
   uint8_t chargeEfficiency = 100;
 
   float fullChargeVoltage = 14.2;

@@ -32,11 +32,6 @@ void BluetoothManager::init(char const* serverName) {
 
 void BluetoothManager::handle() {
   if (pServer) {
-    if (auto const connectedCount = pServer->getConnectedCount(); connectedCount > 0) {
-      String message = "Connected devices: ";
-      message += connectedCount;
-      logger.info(message.c_str());
-    }
   } else {
     logger.critical("Server not initialized");
   }

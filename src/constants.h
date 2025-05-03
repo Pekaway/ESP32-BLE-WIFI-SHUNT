@@ -18,7 +18,7 @@ constexpr uint16_t SHUNT_MAXIMUM_AMPS = 1022;
 // Battery constants
 constexpr uint32_t SHUNT_MAX_CAPACITY = 100;    //
 constexpr uint32_t SHUNT_INITIAL_SOC = 100;     // %
-constexpr auto AUTO_SAVE_INTERVAL = 30;         // s
+constexpr auto AUTO_SAVE_INTERVAL = 15;         // s
 constexpr uint8_t SHUNT_CHARGE_EFFIENCY = 100;  // %
 
 // MQTT constants

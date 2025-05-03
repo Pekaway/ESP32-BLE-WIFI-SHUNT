@@ -89,7 +89,7 @@ void Shunt::setChargeEfficiency(uint8_t percentage) {
 
 double Shunt::getChargeEfficiency() const { return this->chargeEfficiency; }
 
-double Shunt::getMaxCapacity() const { return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL); }
+long long Shunt::getMaxCapacity() const { return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL); }
 
 bool Shunt::loadConfig() {
   ConfigManager& config = ConfigManager::getInstance();
@@ -97,11 +97,8 @@ bool Shunt::loadConfig() {
   uint32_t const maxCapacity = config.get<int>(ConfigKey::MAXIMUM_AMPS, 100);  // Default 100Ah
   maxCapacityMilliAmpMs = static_cast<int64_t>(maxCapacity) * 60LL * 60LL * 1000LL * 1000LL;
 
-  int const socPercentage = config.get<int>(ConfigKey::CURRENT_SOC, config.get<int>(ConfigKey::INITIAL_SOC));
-  currentCapacityMilliAmpMs = maxCapacityMilliAmpMs / 100 * socPercentage;
-
   if (config.hasKey(ConfigKey::CURRENT_CAPACITY_MAMS)) {
-    currentCapacityMilliAmpMs = config.get<int>(ConfigKey::CURRENT_CAPACITY_MAMS);
+    currentCapacityMilliAmpMs = config.get<long long>(ConfigKey::CURRENT_CAPACITY_MAMS);
   }
 
   fullChargeVoltage = config.get<float>(ConfigKey::FULL_CHARGE_VOLTAGE);
@@ -111,7 +108,7 @@ bool Shunt::loadConfig() {
   lastStoredCapacityMilliAmpMs = currentCapacityMilliAmpMs;
 
   char message[100];
-  snprintf(message, sizeof(message), "Loaded max capacity: %d Ah, SOC: %d%%", maxCapacity, socPercentage);
+  snprintf(message, sizeof(message), "Loaded max capacity: %d Ah, SOC: %i%%", maxCapacity, calculateStateOfCharge());
   logger.info(message);
 
   return true;
@@ -120,18 +117,13 @@ bool Shunt::loadConfig() {
 bool Shunt::saveStateToConfig() {
   ConfigManager& config = ConfigManager::getInstance();
 
-  int const socPercentage = static_cast<int>(calculateStateOfCharge());
-  config.set(ConfigKey::CURRENT_SOC, socPercentage);
-
   config.set(ConfigKey::CURRENT_CAPACITY_MAMS, currentCapacityMilliAmpMs);
 
   bool const result = config.saveConfig();
-
   if (result) {
     char message[100];
-    snprintf(message, sizeof(message), "Stored SOC: %d%%, capacity: %lld mA-ms", socPercentage,
-             currentCapacityMilliAmpMs);
-
+    snprintf(message, sizeof(message), "Stored capacity: %lld mA-ms, SOC: %i%%", currentCapacityMilliAmpMs,
+             calculateStateOfCharge());
     logger.info(message);
   } else {
     logger.critical("Failed to store battery state");
@@ -142,15 +134,25 @@ bool Shunt::saveStateToConfig() {
 
 void Shunt::update() {
   auto const currentMillis = millis();
+  double capacityDeltaMilliAmpMs = 0;
 
   if (lastUpdateMillis > 0) {
     // Calculate consumed or recharged capacity since last update
     auto const elapsedMs = currentMillis - lastUpdateMillis;
-    auto const currentAmps = getBusCurrent() * chargeEfficiency / 100;
-    auto const capacityDeltaMilliAmpMs = (currentAmps * 1000 * elapsedMs);
 
-    // Update the current capacity
-    currentCapacityMilliAmpMs += capacityDeltaMilliAmpMs;
+    if (getBusCurrent() < 0) {
+      // Charging
+      auto const currentAmps = getBusCurrent() * chargeEfficiency / 100;
+      capacityDeltaMilliAmpMs = (currentAmps * 1000 * elapsedMs);
+
+      currentCapacityMilliAmpMs -= capacityDeltaMilliAmpMs;
+    } else if (getBusCurrent() > 0) {
+      // Discharging
+      capacityDeltaMilliAmpMs = (getBusCurrent() * 1000 * elapsedMs);
+    }
+
+    currentCapacityMilliAmpMs -= capacityDeltaMilliAmpMs;
+
     clampStateOfCharge();
   }
 
@@ -179,9 +181,7 @@ void Shunt::update() {
     logger.info("Full charge conditions no longer met, resetting timer");
   }
 
-  ConfigManager& config = ConfigManager::getInstance();
-
-  if (auto const autoSaveInterval = config.get<uint32_t>(ConfigKey::AUTO_SAVE_INTERVAL, 30) * 1000;
+  if (constexpr auto autoSaveInterval = AUTO_SAVE_INTERVAL * 1000;
       currentMillis - lastStorageMillis >= autoSaveInterval) {
     lastStorageMillis = currentMillis;
 
@@ -189,32 +189,28 @@ void Shunt::update() {
       currentCapacityMilliAmpMs = maxCapacityMilliAmpMs;
     }
 
-    int64_t capacityChange = lastStoredCapacityMilliAmpMs - currentCapacityMilliAmpMs;
-    if (capacityChange < 0) capacityChange = -capacityChange;
-
-    if (capacityChange > capacityThresholdToStore) {
-      saveStateToConfig();
-      lastStoredCapacityMilliAmpMs = currentCapacityMilliAmpMs;
-    }
+    saveStateToConfig();
+    lastStoredCapacityMilliAmpMs = currentCapacityMilliAmpMs;
   }
 
   lastUpdateMillis = currentMillis;
 }
 
-double Shunt::calculateStateOfCharge() const {
+uint16_t Shunt::calculateStateOfCharge() const {
   if (maxCapacityMilliAmpMs <= 0) return 0;
 
-  return (currentCapacityMilliAmpMs / maxCapacityMilliAmpMs) * 100.0f;
+  return static_cast<uint16_t>(static_cast<double>(currentCapacityMilliAmpMs) / maxCapacityMilliAmpMs * 100.0);
 }
 
 double Shunt::getTTGO() {
   double ttgo = 0.0;
 
-  if (float const busCurrent = getBusCurrent(); busCurrent < -0.01f) {
+  if (double const busCurrent = getBusCurrent(); busCurrent < -0.01f) {
     // Charging - calculate time to full
     int64_t const remainingCapacity = maxCapacityMilliAmpMs - currentCapacityMilliAmpMs;
 
-    if (float const chargingCurrentMilliA = abs(busCurrent) * 1000.0f * (static_cast<float>(chargeEfficiency) / 100.0f);
+    if (double const chargingCurrentMilliA =
+            abs(busCurrent) * 1000.0f * (static_cast<float>(chargeEfficiency) / 100.0f);
         chargingCurrentMilliA > 0) {
       ttgo = static_cast<double>(remainingCapacity) / (chargingCurrentMilliA);
       ttgo /= (60.0 * 60.0 * 1000.0);
@@ -224,7 +220,7 @@ double Shunt::getTTGO() {
   } else if (busCurrent > 0.01f) {
     // Discharging - calculate time remaining
 
-    if (float const dischargingCurrentMilliA = busCurrent * 1000.0f; dischargingCurrentMilliA > 0) {
+    if (double const dischargingCurrentMilliA = busCurrent * 1000.0f; dischargingCurrentMilliA > 0) {
       ttgo = static_cast<double>(currentCapacityMilliAmpMs) / dischargingCurrentMilliA;
       ttgo /= (60.0 * 60.0 * 1000.0);
     } else {

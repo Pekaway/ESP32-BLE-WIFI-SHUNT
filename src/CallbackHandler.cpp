@@ -275,6 +275,7 @@ void CallbackHandler::updateMqttConfigCharacteristic(BLECharacteristic* mqttConf
 void CallbackHandler::updateShuntConfigCharacteristic(BLECharacteristic* shuntConfigChar) const {
   JsonDocument doc;
   doc["ledEnabled"] = config.get<bool>(ConfigKey::LED_ENABLED);
+  doc["uptime"] = millis();
 
   String json_string;
   serializeJson(doc, json_string);

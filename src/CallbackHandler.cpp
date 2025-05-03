@@ -224,8 +224,10 @@ void CallbackHandler::updateShuntStatus(BLECharacteristic* shuntStatusChar) cons
   doc["externalBattery"] = externalBattery.readVoltage();
   doc["ttgo"] = shunt.getTTGO();
   doc["power"] = shunt.getPower();
+
   String statusJson;
   serializeJson(doc, statusJson);
+
   shuntStatusChar->setValue(statusJson.c_str());
   shuntStatusChar->notify();
 }
@@ -239,6 +241,7 @@ void CallbackHandler::updateBatteryConfigCharacteristic(BLECharacteristic* batte
   doc["fullChargeVoltage"] = shunt.getFullChargeVoltage();
   doc["fullChargeCurrent"] = shunt.getFullChargeCurrent();
   doc["fullChargeDuration"] = shunt.getFullChargeDuration();
+  doc["setupAllowed"] = setupAllowed;
 
   String jsonString;
   serializeJson(doc, jsonString);
@@ -246,11 +249,12 @@ void CallbackHandler::updateBatteryConfigCharacteristic(BLECharacteristic* batte
   batteryConfigChar->setValue(jsonString.c_str());
 }
 
-void CallbackHandler::updateWifiConfigCharacteristic(BLECharacteristic* wifiConfigChar) {
+void CallbackHandler::updateWifiConfigCharacteristic(BLECharacteristic* wifiConfigChar) const {
   JsonDocument doc;
   doc["ip"] = WiFi.localIP();
   doc["ssid"] = WiFi.SSID();
   doc["rssi"] = WiFi.RSSI();
+  doc["setupAllowed"] = setupAllowed;
 
   String jsonString;
   serializeJson(doc, jsonString);
@@ -265,6 +269,7 @@ void CallbackHandler::updateMqttConfigCharacteristic(BLECharacteristic* mqttConf
   doc["user"] = config.get<String>(ConfigKey::MQTT_USER);
   doc["password"] = config.get<String>(ConfigKey::MQTT_PASSWORD);
   doc["connected"] = MQTTManager::getInstance().isConnected();
+  doc["setupAllowed"] = setupAllowed;
 
   String jsonString;
   serializeJson(doc, jsonString);
@@ -276,6 +281,7 @@ void CallbackHandler::updateShuntConfigCharacteristic(BLECharacteristic* shuntCo
   JsonDocument doc;
   doc["ledEnabled"] = config.get<bool>(ConfigKey::LED_ENABLED);
   doc["uptime"] = millis();
+  doc["setupAllowed"] = setupAllowed;
 
   String json_string;
   serializeJson(doc, json_string);

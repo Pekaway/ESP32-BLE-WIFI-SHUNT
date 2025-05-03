@@ -26,7 +26,7 @@ class CallbackHandler {
 
   void updateShuntStatus(BLECharacteristic* shuntStatusChar) const;
   void updateBatteryConfigCharacteristic(BLECharacteristic* batteryConfigChar) const;
-  static void updateWifiConfigCharacteristic(BLECharacteristic* wifiConfigChar);
+  void updateWifiConfigCharacteristic(BLECharacteristic* wifiConfigChar) const;
   void updateMqttConfigCharacteristic(BLECharacteristic* mqttConfigChar) const;
   void updateShuntConfigCharacteristic(BLECharacteristic* shuntConfigChar) const;
 

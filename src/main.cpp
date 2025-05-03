@@ -69,7 +69,7 @@ void setup() {
   btManager.startAdvertising();
   callbackHandler.updateBatteryConfigCharacteristic(batteryConfigChar);
   callbackHandler.updateShuntStatus(shuntStatusChar);
-  CallbackHandler::updateWifiConfigCharacteristic(wifiConfigChar);
+  callbackHandler.updateWifiConfigCharacteristic(wifiConfigChar);
   callbackHandler.updateMqttConfigCharacteristic(mqttConfigChar);
   callbackHandler.updateShuntConfigCharacteristic(shuntConfigChar);
 
@@ -95,7 +95,7 @@ void loop() {
 
     callbackHandler.updateBatteryConfigCharacteristic(batteryConfigChar);
     callbackHandler.updateShuntStatus(shuntStatusChar);
-    CallbackHandler::updateWifiConfigCharacteristic(wifiConfigChar);
+    callbackHandler.updateWifiConfigCharacteristic(wifiConfigChar);
     callbackHandler.updateMqttConfigCharacteristic(mqttConfigChar);
     callbackHandler.updateShuntConfigCharacteristic(shuntConfigChar);
 

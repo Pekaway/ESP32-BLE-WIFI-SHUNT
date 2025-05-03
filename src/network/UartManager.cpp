@@ -1,4 +1,5 @@
 #include "UartManager.h"
+#include <constants.h>
 
 UartManager& UartManager::getInstance() {
   static UartManager instance;

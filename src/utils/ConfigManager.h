@@ -6,6 +6,7 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 #include <Logger.h>
+
 class ConfigManager {
  public:
   ConfigManager(ConfigManager const&) = delete;

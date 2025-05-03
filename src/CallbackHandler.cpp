@@ -121,12 +121,12 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
     return;
   }
 
-  ConfigManager& config = ConfigManager::getInstance();
   Shunt& shunt = Shunt::getInstance();
 
-  if (doc["maxCapacity"].is<uint32_t>()) {
-    if (uint32_t const maxCapacity = doc["maxCapacity"]; maxCapacity > 0 && maxCapacity <= 10000) {
+  if (doc["capacityAmpHours"].is<uint16_t>()) {
+    if (uint16_t const maxCapacity = doc["capacityAmpHours"]; maxCapacity > 0 && maxCapacity <= 10000) {
       logger.info(("Setting max capacity: " + String(maxCapacity)).c_str());
+
       shunt.setMaxCapacity(maxCapacity);
     } else {
       logger.warning("Invalid max capacity value (must be uint32_t)");
@@ -146,24 +146,17 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
   if (doc["chargeEfficiency"].is<float>()) {
     if (uint16_t const efficiency = doc["chargeEfficiency"]; efficiency > 0 && efficiency <= 100) {
       logger.info(("Setting charge efficiency: " + String(efficiency)).c_str());
+
       shunt.setChargeEfficiency(efficiency);
     } else {
       logger.warning("Invalid charge efficiency value (must be 0-100)");
     }
   }
 
-  if (doc["maxAmps"].is<float>()) {
-    if (float const maxAmps = doc["maxAmps"]; maxAmps > 0 && maxAmps <= 1022) {
-      logger.info(("Setting maximum amps: " + String(maxAmps)).c_str());
-      config.set<float>(ConfigKey::MAXIMUM_AMPS, maxAmps);
-    } else {
-      logger.warning("Invalid maximum amps value (must be 0-1022)");
-    }
-  }
-
   if (doc["fullChargeVoltage"].is<float>()) {
     if (float const voltage = doc["fullChargeVoltage"]; voltage > 0 && voltage <= 100) {
       logger.info(("Setting full charge voltage: " + String(voltage)).c_str());
+
       shunt.setFullChargeVoltage(voltage);
     } else {
       logger.warning("Invalid full charge voltage value (must be 0-100)");
@@ -173,6 +166,7 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
   if (doc["fullChargeCurrent"].is<float>()) {
     if (float const current = doc["fullChargeCurrent"]; current > 0 && current <= 100) {
       logger.info(("Setting full charge current: " + String(current)).c_str());
+
       shunt.setFullChargeCurrent(current);
     } else {
       logger.warning("Invalid full charge current value (must be 0-100)");
@@ -182,6 +176,7 @@ void CallbackHandler::handleBatteryConfig(String const& value) {
   if (doc["fullChargeDuration"].is<uint32_t>()) {
     if (uint32_t const duration = doc["fullChargeDuration"]; duration > 0 && duration <= 60) {
       logger.info(("Setting full charge duration: " + String(duration)).c_str());
+
       shunt.setFullChargeDuration(duration);
     } else {
       logger.warning("Invalid full charge duration value (must be 1-60 minutes)");
@@ -223,11 +218,12 @@ void CallbackHandler::updateShuntStatus(BLECharacteristic* shuntStatusChar) cons
   doc["voltage"] = shunt.getBusVoltage();
   doc["current"] = shunt.getBusCurrent();
   doc["soc"] = shunt.getStateOfCharge();
-  doc["capacity"] = shunt.getMaxCapacity();
+  doc["capacityAmpHours"] = shunt.getMaxCapacity();
   doc["chargeEfficiency"] = shunt.getChargeEfficiency();
   doc["time"] = millis();
   doc["externalBattery"] = externalBattery.readVoltage();
   doc["ttgo"] = shunt.getTTGO();
+  doc["power"] = shunt.getPower();
   String statusJson;
   serializeJson(doc, statusJson);
   shuntStatusChar->setValue(statusJson.c_str());
@@ -239,7 +235,7 @@ void CallbackHandler::updateBatteryConfigCharacteristic(BLECharacteristic* batte
   doc["maxCapacity"] = shunt.getMaxCapacity();
   doc["socPercentage"] = static_cast<uint8_t>(shunt.calculateStateOfCharge());
   doc["chargeEfficiency"] = shunt.getChargeEfficiency();
-  doc["maxAmps"] = config.get<float>(ConfigKey::MAXIMUM_AMPS, 0);
+  doc["capacityAmpHours"] = shunt.getMaxCapacity();
   doc["fullChargeVoltage"] = shunt.getFullChargeVoltage();
   doc["fullChargeCurrent"] = shunt.getFullChargeCurrent();
   doc["fullChargeDuration"] = shunt.getFullChargeDuration();

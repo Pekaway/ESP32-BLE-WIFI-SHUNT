@@ -1,4 +1,5 @@
 #include "Shunt.h"
+#include "../constants.h"
 #include "../utils/ConfigManager.h"
 
 Shunt& Shunt::getInstance() {
@@ -13,14 +14,13 @@ Shunt::Shunt() {
 bool Shunt::init() {
   ConfigManager& config = ConfigManager::getInstance();
 
-  this->maximumAmps = config.get<uint32_t>(ConfigKey::MAXIMUM_AMPS, maximumAmps);
   this->chargeEfficiency = config.get<uint8_t>(ConfigKey::CHARGE_EFFICIENCY);
 
-  deviceCount = ina.begin(this->maximumAmps, this->shuntMicroOhm, 255, 7, 6);
+  deviceCount = ina.begin(SHUNT_MAXIMUM_AMPS, SHUNT_MICRO_OHM, 255, 7, 6);
   while (deviceCount == 0) {
     logger.critical("No INA device found, retrying in 10 seconds...");
     delay(10000);
-    deviceCount = ina.begin(this->maximumAmps, this->shuntMicroOhm);
+    deviceCount = ina.begin(SHUNT_MAXIMUM_AMPS, SHUNT_MICRO_OHM, 255, 7, 6);
   }
 
   char message[50];
@@ -49,11 +49,11 @@ double Shunt::getPower() { return ina.getBusMicroWatts(0) / 1000000.0; }
 
 float Shunt::getStateOfCharge() const { return calculateStateOfCharge(); }
 
-void Shunt::setMaxCapacity(uint32_t const ampHours) {
+void Shunt::setMaxCapacity(uint16_t const ampHours) {
   maxCapacityMilliAmpMs = ampHours * 60LL * 60LL * 1000LL * 1000LL;
 
   ConfigManager& config = ConfigManager::getInstance();
-  config.set<uint32_t>(ConfigKey::MAXIMUM_AMPS, ampHours);
+  config.set(ConfigKey::MAXIMUM_CAPACITY_MAMS, maxCapacityMilliAmpMs);
   config.saveConfig();
 
   char message[50];
@@ -89,13 +89,13 @@ void Shunt::setChargeEfficiency(uint8_t percentage) {
 
 double Shunt::getChargeEfficiency() const { return this->chargeEfficiency; }
 
-long long Shunt::getMaxCapacity() const { return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL); }
+uint64_t Shunt::getMaxCapacity() const { return maxCapacityMilliAmpMs / (60LL * 60LL * 1000LL * 1000LL); }
 
 bool Shunt::loadConfig() {
   ConfigManager& config = ConfigManager::getInstance();
 
-  uint32_t const maxCapacity = config.get<int>(ConfigKey::MAXIMUM_AMPS, 100);  // Default 100Ah
-  maxCapacityMilliAmpMs = static_cast<int64_t>(maxCapacity) * 60LL * 60LL * 1000LL * 1000LL;
+  maxCapacityMilliAmpMs = config.get<uint64_t>(ConfigKey::MAXIMUM_CAPACITY_MAMS, 100LL * 60LL * 60LL * 1000LL * 1000LL);
+  logger.info(String(maxCapacityMilliAmpMs).c_str());
 
   if (config.hasKey(ConfigKey::CURRENT_CAPACITY_MAMS)) {
     currentCapacityMilliAmpMs = config.get<long long>(ConfigKey::CURRENT_CAPACITY_MAMS);
@@ -108,35 +108,25 @@ bool Shunt::loadConfig() {
   lastStoredCapacityMilliAmpMs = currentCapacityMilliAmpMs;
 
   char message[100];
-  snprintf(message, sizeof(message), "Loaded max capacity: %d Ah, SOC: %i%%", maxCapacity, calculateStateOfCharge());
+  snprintf(message, sizeof(message), "Loaded max capacity: %lld mA-ms, SOC: %i%%", maxCapacityMilliAmpMs,
+           calculateStateOfCharge());
   logger.info(message);
 
   return true;
 }
 
-bool Shunt::saveStateToConfig() {
+void Shunt::saveStateToConfig() const {
   ConfigManager& config = ConfigManager::getInstance();
 
   config.set(ConfigKey::CURRENT_CAPACITY_MAMS, currentCapacityMilliAmpMs);
-
-  bool const result = config.saveConfig();
-  if (result) {
-    char message[100];
-    snprintf(message, sizeof(message), "Stored capacity: %lld mA-ms, SOC: %i%%", currentCapacityMilliAmpMs,
-             calculateStateOfCharge());
-    logger.info(message);
-  } else {
-    logger.critical("Failed to store battery state");
-  }
-
-  return result;
+  config.saveConfig();
 }
 
 void Shunt::update() {
   auto const currentMillis = millis();
-  double capacityDeltaMilliAmpMs = 0;
 
   if (lastUpdateMillis > 0) {
+    double capacityDeltaMilliAmpMs = 0;
     // Calculate consumed or recharged capacity since last update
     auto const elapsedMs = currentMillis - lastUpdateMillis;
 

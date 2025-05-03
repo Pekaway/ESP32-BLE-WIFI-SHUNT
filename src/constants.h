@@ -13,13 +13,13 @@ auto constexpr SHUNT_CONFIG_CHAR_UUID = "e030f283-f7f3-4df8-a0f5-f2af18d1cea6";
 
 // Shunt constants
 constexpr uint32_t SHUNT_MICRO_OHM = 100;
-constexpr uint16_t SHUNT_MAXIMUM_AMPS = 1022;
+constexpr uint16_t SHUNT_MAXIMUM_AMPS = 500;
 
 // Battery constants
-constexpr uint32_t SHUNT_MAX_CAPACITY = 100;    //
-constexpr uint32_t SHUNT_INITIAL_SOC = 100;     // %
-constexpr auto AUTO_SAVE_INTERVAL = 15;         // s
-constexpr uint8_t SHUNT_CHARGE_EFFIENCY = 100;  // %
+constexpr uint32_t SHUNT_MAX_CAPACITY = 100;      //
+constexpr uint32_t SHUNT_INITIAL_SOC = 100;       // %
+constexpr auto AUTO_SAVE_INTERVAL = 30;           // s
+constexpr uint8_t SHUNT_CHARGE_EFFICIENCY = 100;  // %
 
 // MQTT constants
 String const HASS_BASE_TOPIC = "homeassistant/sensor/pekaway_shunt/";
@@ -36,7 +36,7 @@ constexpr uint8_t PIXEL_PIN = 4;
 constexpr uint8_t UART_RX_PIN = 27;
 constexpr uint8_t UART_TX_PIN = 28;
 constexpr uint32_t UART_BAUD_RATE = 19200;
-constexpr byte UART_PID = 0x111;
+constexpr uint8_t UART_PID = 255;
 
 // Other constants
 constexpr uint32_t SERIAL_SPEED = 115200;

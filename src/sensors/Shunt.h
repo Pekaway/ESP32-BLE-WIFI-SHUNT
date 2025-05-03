@@ -5,7 +5,6 @@
 #include <Arduino.h>
 #include <INA.h>
 #include <Logger.h>
-#include <constants.h>
 
 class Shunt {
  public:
@@ -25,13 +24,13 @@ class Shunt {
   [[nodiscard]] uint16_t calculateStateOfCharge() const;
   double getTTGO();
 
-  void setMaxCapacity(uint32_t ampHours);
+  void setMaxCapacity(uint16_t ampHours);
   void setCurrentStateOfCharge(uint8_t percentage);
   void setChargeEfficiency(uint8_t percentage);
   void setFullChargeVoltage(float voltage);
   void setFullChargeCurrent(float current);
   void setFullChargeDuration(uint32_t minutes);
-  [[nodiscard]] long long getMaxCapacity() const;
+  [[nodiscard]] uint64_t getMaxCapacity() const;
 
  private:
   Shunt();
@@ -40,26 +39,23 @@ class Shunt {
 
   INA_Class ina;
   uint8_t deviceCount = 0;
-  uint32_t shuntMicroOhm = SHUNT_MICRO_OHM;
-  uint32_t maximumAmps = SHUNT_MAXIMUM_AMPS;
 
-  int64_t maxCapacityMilliAmpMs = 0;
-  int64_t currentCapacityMilliAmpMs = 0;
-  int64_t lastStoredCapacityMilliAmpMs = 0;
-  uint8_t chargeEfficiency = 100;
+  uint64_t maxCapacityMilliAmpMs = 0;
+  uint64_t currentCapacityMilliAmpMs = 0;
+  uint64_t lastStoredCapacityMilliAmpMs = 0;
+  uint8_t chargeEfficiency = 0;
 
-  float fullChargeVoltage = 14.2;
-  float fullChargeCurrent = 4.0;
-  uint32_t fullChargeDuration = 180000;
+  float fullChargeVoltage = 0;
+  float fullChargeCurrent = 0;
+  uint32_t fullChargeDuration = 0;
   uint32_t fullChargeConditionStartTime = 0;
   bool fullChargeConditionMet = false;
 
   unsigned long lastUpdateMillis = 0;
   unsigned long lastStorageMillis = 0;
-  unsigned long const STORAGE_INTERVAL_MS = 30000;
 
   bool loadConfig();
-  bool saveStateToConfig();
+  void saveStateToConfig() const;
   void clampStateOfCharge();
 };
 

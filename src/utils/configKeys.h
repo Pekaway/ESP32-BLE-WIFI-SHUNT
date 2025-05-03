@@ -6,12 +6,12 @@
 
 enum class ConfigKey {
   DEVICE_NAME,
-  MAXIMUM_AMPS,
   MQTT_USER,
   MQTT_PASSWORD,
   MQTT_SERVER,
   MQTT_PORT,
   CURRENT_CAPACITY_MAMS,
+  MAXIMUM_CAPACITY_MAMS,
   CHARGE_EFFICIENCY,
   FULL_CHARGE_VOLTAGE,
   FULL_CHARGE_CURRENT,
@@ -26,7 +26,6 @@ class ConfigKeys {
   static char const* toString(ConfigKey const key) {
     static std::unordered_map<ConfigKey, char const*> const keyToStringMap = {
         {ConfigKey::DEVICE_NAME, "device_name"},
-        {ConfigKey::MAXIMUM_AMPS, "maximum_amps"},
         {ConfigKey::MQTT_USER, "mqtt_user"},
         {ConfigKey::MQTT_PASSWORD, "mqtt_password"},
         {ConfigKey::MQTT_SERVER, "mqtt_server"},
@@ -38,7 +37,8 @@ class ConfigKeys {
         {ConfigKey::FULL_CHARGE_DURATION, "full_charge_duration"},
         {ConfigKey::WIFI_SSID, "wifi_ssid"},
         {ConfigKey::WIFI_PASSWORD, "wifi_password"},
-        {ConfigKey::LED_ENABLED, "led_enabled"}};
+        {ConfigKey::LED_ENABLED, "led_enabled"},
+        {ConfigKey::MAXIMUM_CAPACITY_MAMS, "maximum_capacity_mams"}};
 
     if (auto const it = keyToStringMap.find(key); it != keyToStringMap.end()) {
       return it->second;

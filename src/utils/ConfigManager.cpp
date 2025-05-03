@@ -122,17 +122,19 @@ bool ConfigManager::readConfigFile() {
 void ConfigManager::createDefaultConfig() {
   jsonDoc.clear();
 
+  logger.info("Creating default configuration");
+
   jsonDoc[ConfigKeys::toString(ConfigKey::DEVICE_NAME)] = BLE_SERVER_NAME;
-  jsonDoc[ConfigKeys::toString(ConfigKey::MAXIMUM_AMPS)] = SHUNT_MAXIMUM_AMPS;
+  jsonDoc[ConfigKeys::toString(ConfigKey::MAXIMUM_CAPACITY_MAMS)] = 1000LL * 60LL * 60LL * 1000LL * 1000LL;
   jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_USER)] = "";
   jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_PASSWORD)] = "";
   jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_SERVER)] = "";
   jsonDoc[ConfigKeys::toString(ConfigKey::MQTT_PORT)] = 1883;
-  jsonDoc[ConfigKeys::toString(ConfigKey::CURRENT_CAPACITY_MAMS)] = 0;
+  jsonDoc[ConfigKeys::toString(ConfigKey::CURRENT_CAPACITY_MAMS)] = 1000LL * 60LL * 60LL * 1000LL * 1000LL;
   jsonDoc[ConfigKeys::toString(ConfigKey::CHARGE_EFFICIENCY)] = 100;
-  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_VOLTAGE)] = 0;
-  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_VOLTAGE)] = 0;
-  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_DURATION)] = 0;
+  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_VOLTAGE)] = 14.4;
+  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_CURRENT)] = 5.0;
+  jsonDoc[ConfigKeys::toString(ConfigKey::FULL_CHARGE_DURATION)] = 10;
   jsonDoc[ConfigKeys::toString(ConfigKey::WIFI_PASSWORD)] = nullptr;
   jsonDoc[ConfigKeys::toString(ConfigKey::WIFI_SSID)] = nullptr;
   jsonDoc[ConfigKeys::toString(ConfigKey::LED_ENABLED)] = true;

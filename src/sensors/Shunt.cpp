@@ -126,22 +126,25 @@ void Shunt::update() {
   auto const currentMillis = millis();
 
   if (lastUpdateMillis > 0) {
-    double capacityDeltaMilliAmpMs = 0;
+    uint64_t capacityDeltaMilliAmpMs = 0;
     // Calculate consumed or recharged capacity since last update
     auto const elapsedMs = currentMillis - lastUpdateMillis;
+    auto const busCurrent = getBusCurrent();
 
-    if (getBusCurrent() < 0) {
+    if (busCurrent > 0.0f) {
       // Charging
-      auto const currentAmps = getBusCurrent() * chargeEfficiency / 100;
+      uint64_t const currentAmps = abs(busCurrent) * chargeEfficiency / 100;
       capacityDeltaMilliAmpMs = (currentAmps * 1000 * elapsedMs);
 
-      currentCapacityMilliAmpMs -= capacityDeltaMilliAmpMs;
-    } else if (getBusCurrent() > 0) {
+      logger.info(("Battery charging: " + String(capacityDeltaMilliAmpMs) + "mA-ms").c_str());
+      currentCapacityMilliAmpMs += capacityDeltaMilliAmpMs;
+    } else if (busCurrent < 0.0f) {
       // Discharging
-      capacityDeltaMilliAmpMs = (getBusCurrent() * 1000 * elapsedMs);
-    }
+      capacityDeltaMilliAmpMs = (abs(busCurrent) * 1000 * elapsedMs);
 
-    currentCapacityMilliAmpMs -= capacityDeltaMilliAmpMs;
+      logger.info(("Battery discharging: " + String(capacityDeltaMilliAmpMs) + "mA-ms").c_str());
+      currentCapacityMilliAmpMs -= capacityDeltaMilliAmpMs;
+    }
 
     clampStateOfCharge();
   }
@@ -194,31 +197,28 @@ uint16_t Shunt::calculateStateOfCharge() const {
 
 double Shunt::getTTGO() {
   double ttgo = 0.0;
+  constexpr double maxTTGO = 9999.0;
 
-  if (double const busCurrent = getBusCurrent(); busCurrent < -0.01f) {
+  if (double const busCurrent = getBusCurrent(); busCurrent > 0.01f) {
     // Charging - calculate time to full
-    int64_t const remainingCapacity = maxCapacityMilliAmpMs - currentCapacityMilliAmpMs;
+    uint64_t const remaining_capacity_milli_amp_ms_uint64 = maxCapacityMilliAmpMs - currentCapacityMilliAmpMs;
+    int64_t const chargingCurrentMilliA = abs(busCurrent) * 1000.0f * (static_cast<float>(chargeEfficiency) / 100.0f);
 
-    if (double const chargingCurrentMilliA =
-            abs(busCurrent) * 1000.0f * (static_cast<float>(chargeEfficiency) / 100.0f);
-        chargingCurrentMilliA > 0) {
-      ttgo = static_cast<double>(remainingCapacity) / (chargingCurrentMilliA);
-      ttgo /= (60.0 * 60.0 * 1000.0);
-    } else {
-      ttgo = 9999.0;
+    if (chargingCurrentMilliA > 0) {
+      return remaining_capacity_milli_amp_ms_uint64 / chargingCurrentMilliA;
     }
-  } else if (busCurrent > 0.01f) {
+    ttgo = maxTTGO;
+  } else if (busCurrent < -0.01f) {
     // Discharging - calculate time remaining
+    double const dischargingCurrentMilliA = abs(busCurrent * 1000.0f);
 
-    if (double const dischargingCurrentMilliA = busCurrent * 1000.0f; dischargingCurrentMilliA > 0) {
-      ttgo = static_cast<double>(currentCapacityMilliAmpMs) / dischargingCurrentMilliA;
-      ttgo /= (60.0 * 60.0 * 1000.0);
-    } else {
-      ttgo = 9999.0;
+    if (dischargingCurrentMilliA > 0) {
+      return (currentCapacityMilliAmpMs) / dischargingCurrentMilliA;
     }
+    ttgo = maxTTGO;
   } else {
     // Current near zero - consider it infinite or N/A
-    ttgo = 9999.0;
+    ttgo = maxTTGO;
   }
 
   // Convert hours to milliseconds for return value

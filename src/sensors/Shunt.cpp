@@ -45,9 +45,9 @@ double Shunt::getBusCurrent() {
   return ina.getBusMicroAmps(0) / 1000000.0 * -1.0;
 }
 
-double Shunt::getPower() { return ina.getBusMicroWatts(0) / 1000000.0; }
+double Shunt::getPower() { return ina.getBusMicroWatts(0) / 1000000.0 * -1.0; }
 
-float Shunt::getStateOfCharge() const { return calculateStateOfCharge(); }
+double Shunt::getStateOfCharge() const { return calculateStateOfCharge(); }
 
 void Shunt::setMaxCapacity(uint16_t const ampHours) {
   maxCapacityMilliAmpMs = ampHours * 60LL * 60LL * 1000LL * 1000LL;
@@ -108,7 +108,7 @@ bool Shunt::loadConfig() {
   lastStoredCapacityMilliAmpMs = currentCapacityMilliAmpMs;
 
   char message[100];
-  snprintf(message, sizeof(message), "Loaded max capacity: %lld mA-ms, SOC: %i%%", maxCapacityMilliAmpMs,
+  snprintf(message, sizeof(message), "Loaded max capacity: %lld mA-ms, SOC: %f%%", maxCapacityMilliAmpMs,
            calculateStateOfCharge());
   logger.info(message);
 
@@ -189,10 +189,10 @@ void Shunt::update() {
   lastUpdateMillis = currentMillis;
 }
 
-uint16_t Shunt::calculateStateOfCharge() const {
+double Shunt::calculateStateOfCharge() const {
   if (maxCapacityMilliAmpMs <= 0) return 0;
 
-  return static_cast<uint16_t>(static_cast<double>(currentCapacityMilliAmpMs) / maxCapacityMilliAmpMs * 100.0);
+  return static_cast<double>(currentCapacityMilliAmpMs) / maxCapacityMilliAmpMs * 100;
 }
 
 double Shunt::getTTGO() {
@@ -201,11 +201,11 @@ double Shunt::getTTGO() {
 
   if (double const busCurrent = getBusCurrent(); busCurrent > 0.01f) {
     // Charging - calculate time to full
-    uint64_t const remaining_capacity_milli_amp_ms_uint64 = maxCapacityMilliAmpMs - currentCapacityMilliAmpMs;
+    uint64_t const remaining_capacity_milli_amp_ms = maxCapacityMilliAmpMs - currentCapacityMilliAmpMs;
     int64_t const chargingCurrentMilliA = abs(busCurrent) * 1000.0f * (static_cast<float>(chargeEfficiency) / 100.0f);
 
     if (chargingCurrentMilliA > 0) {
-      return remaining_capacity_milli_amp_ms_uint64 / chargingCurrentMilliA;
+      return remaining_capacity_milli_amp_ms / chargingCurrentMilliA;
     }
     ttgo = maxTTGO;
   } else if (busCurrent < -0.01f) {
@@ -213,7 +213,7 @@ double Shunt::getTTGO() {
     double const dischargingCurrentMilliA = abs(busCurrent * 1000.0f);
 
     if (dischargingCurrentMilliA > 0) {
-      return (currentCapacityMilliAmpMs) / dischargingCurrentMilliA;
+      return static_cast<double>(currentCapacityMilliAmpMs) / dischargingCurrentMilliA;
     }
     ttgo = maxTTGO;
   } else {

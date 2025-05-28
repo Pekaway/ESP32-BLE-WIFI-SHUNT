@@ -12,7 +12,7 @@ auto constexpr WIFI_CHAR_UUID = "785840ec-f07e-495c-a9e6-e268398ebdd6";
 auto constexpr SHUNT_CONFIG_CHAR_UUID = "e030f283-f7f3-4df8-a0f5-f2af18d1cea6";
 
 // Shunt constants
-constexpr uint32_t SHUNT_MICRO_OHM = 100;
+constexpr uint32_t SHUNT_MICRO_OHM = 375;
 constexpr uint16_t SHUNT_MAXIMUM_AMPS = 500;
 
 // Battery constants

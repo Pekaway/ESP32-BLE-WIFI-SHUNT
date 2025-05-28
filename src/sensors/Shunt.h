@@ -16,12 +16,12 @@ class Shunt {
   double getBusVoltage();
   double getBusCurrent();
   double getPower();
-  [[nodiscard]] float getStateOfCharge() const;
+  [[nodiscard]] double getStateOfCharge() const;
   [[nodiscard]] float getFullChargeVoltage() const { return fullChargeVoltage; }
   [[nodiscard]] float getFullChargeCurrent() const { return fullChargeCurrent; }
   [[nodiscard]] uint32_t getFullChargeDuration() const { return fullChargeDuration / (60 * 1000); }
   [[nodiscard]] double getChargeEfficiency() const;
-  [[nodiscard]] uint16_t calculateStateOfCharge() const;
+  [[nodiscard]] double calculateStateOfCharge() const;
   double getTTGO();
 
   void setMaxCapacity(uint16_t ampHours);

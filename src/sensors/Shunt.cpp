@@ -136,13 +136,11 @@ void Shunt::update() {
       uint64_t const currentAmps = abs(busCurrent) * chargeEfficiency / 100;
       capacityDeltaMilliAmpMs = (currentAmps * 1000 * elapsedMs);
 
-      logger.info(("Battery charging: " + String(capacityDeltaMilliAmpMs) + "mA-ms").c_str());
       currentCapacityMilliAmpMs += capacityDeltaMilliAmpMs;
     } else if (busCurrent < 0.0f) {
       // Discharging
       capacityDeltaMilliAmpMs = (abs(busCurrent) * 1000 * elapsedMs);
 
-      logger.info(("Battery discharging: " + String(capacityDeltaMilliAmpMs) + "mA-ms").c_str());
       currentCapacityMilliAmpMs -= capacityDeltaMilliAmpMs;
     }
 

@@ -53,8 +53,6 @@ void MQTTManager::publishShuntValues() {
                  String(shunt.getFullChargeDuration()).c_str());
   client.publish((HASS_NUMER_BASE_TOPIC + SOC_TOPIC + "/state").c_str(), String(shunt.getStateOfCharge()).c_str());
   client.publish((HASS_NUMER_BASE_TOPIC + CAPACITY_TOPIC + "/state").c_str(), String(shunt.getMaxCapacity()).c_str());
-
-  logger.info("Shunt values published to MQTT");
 }
 
 void MQTTManager::registerHomeAssistantSensors() {

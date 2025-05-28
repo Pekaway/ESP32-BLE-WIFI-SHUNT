@@ -33,15 +33,15 @@ void MQTTManager::publishShuntValues() {
   auto const current = shunt.getBusCurrent();
   auto const power = shunt.getPower();
   auto const soc = shunt.getStateOfCharge();
-  auto const maxCapacity = shunt.getMaxCapacity();
+  auto const capacity = shunt.getCurrentCapacity();
   auto const externalVoltage = externalBattery.readVoltage();
 
   client.publish((HASS_SENSOR_BASE_TOPIC + "voltage/state").c_str(), String(voltage).c_str());
   client.publish((HASS_SENSOR_BASE_TOPIC + "current/state").c_str(), String(current).c_str());
   client.publish((HASS_SENSOR_BASE_TOPIC + "power/state").c_str(), String(power).c_str());
   client.publish((HASS_SENSOR_BASE_TOPIC + "soc/state").c_str(), String(soc).c_str());
-  client.publish((HASS_SENSOR_BASE_TOPIC + "max_capacity/state").c_str(), String(maxCapacity).c_str());
   client.publish((HASS_SENSOR_BASE_TOPIC + "external_voltage/state").c_str(), String(externalVoltage).c_str());
+  client.publish((HASS_SENSOR_BASE_TOPIC + "capacity/state").c_str(), String(capacity).c_str());
 
   client.publish((HASS_NUMER_BASE_TOPIC + CHARGE_EFFICIENCY_TOPIC + "/state").c_str(),
                  String(shunt.getChargeEfficiency()).c_str());
@@ -51,6 +51,8 @@ void MQTTManager::publishShuntValues() {
                  String(shunt.getFullChargeCurrent()).c_str());
   client.publish((HASS_NUMER_BASE_TOPIC + FULL_CHARGE_DURATION_TOPIC + "/state").c_str(),
                  String(shunt.getFullChargeDuration()).c_str());
+  client.publish((HASS_NUMER_BASE_TOPIC + SOC_TOPIC + "/state").c_str(), String(shunt.getStateOfCharge()).c_str());
+  client.publish((HASS_NUMER_BASE_TOPIC + CAPACITY_TOPIC + "/state").c_str(), String(shunt.getMaxCapacity()).c_str());
 
   logger.info("Shunt values published to MQTT");
 }
@@ -65,9 +67,7 @@ void MQTTManager::registerHomeAssistantSensors() {
   publishSensorConfig({.id = "power", .name = "Power", .unit = "W", .deviceClass = "power", .icon = "mdi:flash"});
 
   publishSensorConfig({.id = "soc", .name = "State of Charge", .unit = "%", .deviceClass = "", .icon = "mdi:battery"});
-
-  publishSensorConfig(
-      {.id = "max_capacity", .name = "Maximum Capacity", .unit = "Ah", .deviceClass = "", .icon = "mdi:battery-high"});
+  publishSensorConfig({.id = "capacity", .name = "Capacity", .unit = "Ah", .deviceClass = "", .icon = "mdi:battery"});
 
   publishSensorConfig({.id = "external_voltage",
                        .name = "External Voltage",
@@ -90,7 +90,7 @@ void MQTTManager::registerHomeAssistantSensors() {
                        .unit = "V",
                        .deviceClass = "voltage",
                        .min = 0,
-                       .max = 25,
+                       .max = 30,
                        .step = 0.1,
                        .icon = "mdi:current-ac"});
 
@@ -113,6 +113,24 @@ void MQTTManager::registerHomeAssistantSensors() {
                        .max = 60,
                        .step = 1,
                        .icon = "mdi:clock-time-eight"});
+
+  publishNumberConfig({.id = "soc",
+                       .name = "State of Charge",
+                       .topic = SOC_TOPIC.c_str(),
+                       .unit = "%",
+                       .min = 1,
+                       .max = 100,
+                       .step = 1,
+                       .icon = "mdi:percent"});
+
+  publishNumberConfig({.id = "max_capacity",
+                       .name = "Capacity",
+                       .topic = CAPACITY_TOPIC.c_str(),
+                       .unit = "Ah",
+                       .min = 1,
+                       .max = 2000,
+                       .step = 10,
+                       .icon = "mdi:lightning-bolt"});
 
   logger.info("Home Assistant sensor configurations published");
 }
@@ -166,6 +184,8 @@ boolean MQTTManager::connect(bool const forceReconnect) {
     client.subscribe((HASS_NUMER_BASE_TOPIC + FULL_CHARGE_VOLTAGE_TOPIC + "/command").c_str());
     client.subscribe((HASS_NUMER_BASE_TOPIC + FULL_CHARGE_CURRENT_TOPIC + "/command").c_str());
     client.subscribe((HASS_NUMER_BASE_TOPIC + FULL_CHARGE_DURATION_TOPIC + "/command").c_str());
+    client.subscribe((HASS_NUMER_BASE_TOPIC + SOC_TOPIC + "/command").c_str());
+    client.subscribe((HASS_NUMER_BASE_TOPIC + CAPACITY_TOPIC + "/command").c_str());
 
     return true;
   }
@@ -196,6 +216,16 @@ void MQTTManager::handleCommandMessage(String const& topic, String const& messag
     if (uint32_t const value = message.toInt(); value > 0 && value <= 60) {
       shunt.setFullChargeDuration(value);
       logger.info(("MQTT set full charge duration: " + String(value)).c_str());
+    }
+  } else if (topic.endsWith(SOC_TOPIC + "/command")) {
+    if (uint32_t const value = message.toInt(); value > 0 && value <= 100) {
+      shunt.setCurrentStateOfCharge(value);
+      logger.info(("MQTT set SOC: " + String(value)).c_str());
+    }
+  } else if (topic.endsWith(CAPACITY_TOPIC + "/command")) {
+    if (uint32_t const value = message.toInt(); value > 0 && value <= 2000) {
+      shunt.setMaxCapacity(value);
+      logger.info(("MQTT set max capacity: " + String(value)).c_str());
     }
   }
 

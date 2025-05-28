@@ -34,6 +34,8 @@ class MQTTManager {
   String const FULL_CHARGE_VOLTAGE_TOPIC = "full_charge_voltage";
   String const FULL_CHARGE_CURRENT_TOPIC = "full_charge_current";
   String const FULL_CHARGE_DURATION_TOPIC = "full_charge_duration";
+  String const SOC_TOPIC = "soc";
+  String const CAPACITY_TOPIC = "capacity";
 
   NetworkClient net = NetworkClient();
   MQTTClient client;

@@ -18,6 +18,7 @@ class Shunt {
   double getPower();
   [[nodiscard]] double getStateOfCharge() const;
   [[nodiscard]] float getFullChargeVoltage() const { return fullChargeVoltage; }
+  [[nodiscard]] float getCurrentCapacity() const { return currentCapacityMilliAmpMs / 3600000000.0; }
   [[nodiscard]] float getFullChargeCurrent() const { return fullChargeCurrent; }
   [[nodiscard]] uint32_t getFullChargeDuration() const { return fullChargeDuration / (60 * 1000); }
   [[nodiscard]] double getChargeEfficiency() const;

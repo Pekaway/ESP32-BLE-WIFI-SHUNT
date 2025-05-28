@@ -1,5 +1,6 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
+#define VERSION 200
 
 // BLE UUIDs
 auto constexpr SERVICE_UUID = "91bad492-b950-4226-aa2b-4ede9fa42f59";
@@ -12,8 +13,22 @@ auto constexpr WIFI_CHAR_UUID = "785840ec-f07e-495c-a9e6-e268398ebdd6";
 auto constexpr SHUNT_CONFIG_CHAR_UUID = "e030f283-f7f3-4df8-a0f5-f2af18d1cea6";
 
 // Shunt constants
+#if VERSION == 200
 constexpr uint32_t SHUNT_MICRO_OHM = 375;
+constexpr uint16_t SHUNT_MAXIMUM_AMPS = 200;
+#elif VERSION == 500
+constexpr uint32_t SHUNT_MICRO_OHM = 100;
 constexpr uint16_t SHUNT_MAXIMUM_AMPS = 500;
+#endif
+
+// External battery
+#if VERSION == 200
+constexpr float CALIBRATION = 2.7046;
+constexpr float CALIBRATION_OFFSET = 0.0;
+#elif VERSION == 500
+constexpr float CALIBRATION = 6.2054;
+constexpr float CALIBRATION_OFFSET = 0.2;
+#endif
 
 // Battery constants
 constexpr uint32_t SHUNT_MAX_CAPACITY = 100;      //

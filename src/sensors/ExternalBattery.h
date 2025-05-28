@@ -4,6 +4,7 @@
 #include <driver/adc.h>
 #include <Arduino.h>
 #include <Logger.h>
+#include <constants.h>
 
 class ExternalBattery {
  public:
@@ -39,8 +40,6 @@ class ExternalBattery {
   ~ExternalBattery() = default;
 
   static constexpr float Vmax = 5.0;
-  static constexpr float CALIBRATION = 6.2054;
-  static constexpr float CALIBRATION_OFFSET = 0.2;
   // 2^12 = 4096
   static constexpr float Dmax = 4096.0;
 

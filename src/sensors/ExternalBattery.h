@@ -29,7 +29,7 @@ class ExternalBattery {
 
     // see also
     // https://docs.espressif.com/projects/esp-idf/en/v5.4.1/esp32c3/api-reference/peripherals/adc_continuous.html
-    return (rawValue * Vmax * CALIBRATION) / Dmax;
+    return (rawValue * Vmax * CALIBRATION) / Dmax + CALIBRATION_OFFSET;
   }
 
  private:
@@ -40,6 +40,7 @@ class ExternalBattery {
 
   static constexpr float Vmax = 5.0;
   static constexpr float CALIBRATION = 6.2054;
+  static constexpr float CALIBRATION_OFFSET = 0.2;
   // 2^12 = 4096
   static constexpr float Dmax = 4096.0;
 

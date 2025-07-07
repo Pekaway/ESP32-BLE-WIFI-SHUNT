@@ -17,7 +17,7 @@ void BluetoothManager::init(char const* serverName) {
 
   auto advData = BLEAdvertisementData();
   advData.setName(serverName);
-  advData.setManufacturerData(serverName);
+  advData.setManufacturerData(DEVICE_TYPE);
 
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new ServerCallbacks(this));

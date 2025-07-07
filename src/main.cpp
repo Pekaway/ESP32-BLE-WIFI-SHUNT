@@ -42,7 +42,12 @@ void setup() {
   WiFiClass::mode(WIFI_STA);
   auto const ssid = config.get<String>(ConfigKey::WIFI_SSID);
   auto const password = config.get<String>(ConfigKey::WIFI_PASSWORD);
-  WiFi.begin(ssid, password);
+
+  if (!ssid.isEmpty()) {
+    WiFi.begin(ssid, password);
+  } else {
+    logger.info("No WiFi SSID configured, skipping WiFi connection");
+  }
 
   if (Shunt& shunt = Shunt::getInstance(); !shunt.init()) {
     logger.critical("Failed to initialize Shunt");

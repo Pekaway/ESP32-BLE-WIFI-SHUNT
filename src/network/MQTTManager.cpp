@@ -36,23 +36,25 @@ void MQTTManager::publishShuntValues() {
   auto const capacity = shunt.getCurrentCapacity();
   auto const externalVoltage = externalBattery.readVoltage();
 
-  client.publish((HASS_SENSOR_BASE_TOPIC + "voltage/state").c_str(), String(voltage).c_str());
-  client.publish((HASS_SENSOR_BASE_TOPIC + "current/state").c_str(), String(current).c_str());
-  client.publish((HASS_SENSOR_BASE_TOPIC + "power/state").c_str(), String(power).c_str());
-  client.publish((HASS_SENSOR_BASE_TOPIC + "soc/state").c_str(), String(soc).c_str());
-  client.publish((HASS_SENSOR_BASE_TOPIC + "external_voltage/state").c_str(), String(externalVoltage).c_str());
-  client.publish((HASS_SENSOR_BASE_TOPIC + "capacity/state").c_str(), String(capacity).c_str());
+  client.publish((HASS_SENSOR_BASE_TOPIC + "voltage/state").c_str(), String(voltage).c_str(), true, 0);
+  client.publish((HASS_SENSOR_BASE_TOPIC + "current/state").c_str(), String(current).c_str(), true, 0);
+  client.publish((HASS_SENSOR_BASE_TOPIC + "power/state").c_str(), String(power).c_str(), true, 0);
+  client.publish((HASS_SENSOR_BASE_TOPIC + "soc/state").c_str(), String(soc).c_str(), true, 0);
+  client.publish((HASS_SENSOR_BASE_TOPIC + "external_voltage/state").c_str(), String(externalVoltage).c_str(), true, 0);
+  client.publish((HASS_SENSOR_BASE_TOPIC + "capacity/state").c_str(), String(capacity).c_str(), true, 0);
 
   client.publish((HASS_NUMER_BASE_TOPIC + CHARGE_EFFICIENCY_TOPIC + "/state").c_str(),
-                 String(shunt.getChargeEfficiency()).c_str());
+                 String(shunt.getChargeEfficiency()).c_str(), true, 0);
   client.publish((HASS_NUMER_BASE_TOPIC + FULL_CHARGE_VOLTAGE_TOPIC + "/state").c_str(),
-                 String(shunt.getFullChargeVoltage()).c_str());
+                 String(shunt.getFullChargeVoltage()).c_str(), true, 0);
   client.publish((HASS_NUMER_BASE_TOPIC + FULL_CHARGE_CURRENT_TOPIC + "/state").c_str(),
-                 String(shunt.getFullChargeCurrent()).c_str());
+                 String(shunt.getFullChargeCurrent()).c_str(), true, 0);
   client.publish((HASS_NUMER_BASE_TOPIC + FULL_CHARGE_DURATION_TOPIC + "/state").c_str(),
-                 String(shunt.getFullChargeDuration()).c_str());
-  client.publish((HASS_NUMER_BASE_TOPIC + SOC_TOPIC + "/state").c_str(), String(shunt.getStateOfCharge()).c_str());
-  client.publish((HASS_NUMER_BASE_TOPIC + CAPACITY_TOPIC + "/state").c_str(), String(shunt.getMaxCapacity()).c_str());
+                 String(shunt.getFullChargeDuration()).c_str(), true, 0);
+  client.publish((HASS_NUMER_BASE_TOPIC + SOC_TOPIC + "/state").c_str(), String(shunt.getStateOfCharge()).c_str(), true,
+                 0);
+  client.publish((HASS_NUMER_BASE_TOPIC + CAPACITY_TOPIC + "/state").c_str(), String(shunt.getMaxCapacity()).c_str(),
+                 true, 0);
 }
 
 void MQTTManager::registerHomeAssistantSensors() {
@@ -265,7 +267,7 @@ void MQTTManager::publishNumberConfig(HomeAssistantNumberConfig const& config) {
   String payload;
   serializeJson(doc, payload);
 
-  client.publish(configTopic.c_str(), payload.c_str());
+  client.publish(configTopic.c_str(), payload.c_str(), true, 1);
 }
 
 void MQTTManager::publishSensorConfig(HomeAssistantSensorConfig const& config) {
@@ -288,5 +290,5 @@ void MQTTManager::publishSensorConfig(HomeAssistantSensorConfig const& config) {
   String payload;
   serializeJson(doc, payload);
 
-  client.publish(configTopic.c_str(), payload.c_str());
+  client.publish(configTopic.c_str(), payload.c_str(), true, 1);
 }

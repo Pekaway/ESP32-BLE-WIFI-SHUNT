@@ -27,6 +27,7 @@ BLECharacteristic* batteryConfigChar;
 BLECharacteristic* wifiConfigChar;
 BLECharacteristic* mqttConfigChar;
 BLECharacteristic* shuntConfigChar;
+BLECharacteristic* resetConfigChar;
 
 unsigned long startUpTime = millis();
 
@@ -70,6 +71,9 @@ void setup() {
   shuntConfigChar = btManager.createWriteCharacteristic(
       SHUNT_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleShuntConfig(value); },
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+  resetConfigChar = btManager.createWriteCharacteristic(
+      RESET_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleResetAndDefaultConfig(value); },
+      BLECharacteristic::PROPERTY_WRITE);
 
   btManager.startAdvertising();
   callbackHandler.updateBatteryConfigCharacteristic(batteryConfigChar);

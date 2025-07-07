@@ -288,3 +288,11 @@ void CallbackHandler::updateShuntConfigCharacteristic(BLECharacteristic* shuntCo
 
   shuntConfigChar->setValue(json_string.c_str());
 }
+
+void CallbackHandler::handleResetAndDefaultConfig(String const& value) {
+  logger.info("Received request to reset shunt and apply default config");
+  config.resetToDefaults();
+  logger.info("Shunt reset and default config applied, now restarting...");
+  delay(1000);
+  ESP.restart();
+}

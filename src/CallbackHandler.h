@@ -23,6 +23,7 @@ class CallbackHandler {
   void handleWiFi(String const& value);
   void handleBatteryConfig(String const& value);
   void handleShuntConfig(String const& value);
+  void handleResetAndDefaultConfig(String const& value);
 
   void updateShuntStatus(BLECharacteristic* shuntStatusChar) const;
   void updateBatteryConfigCharacteristic(BLECharacteristic* batteryConfigChar) const;

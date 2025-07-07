@@ -12,6 +12,7 @@ auto constexpr BATTERY_CONFIG_CHAR_UUID = "63d58a25-c22b-4586-b297-f1e310b7b0bc"
 auto constexpr MQTT_CONFIG_CHAR_UUID = "2f681ce5-f2b0-4034-b714-d87156af4b5a";
 auto constexpr WIFI_CHAR_UUID = "785840ec-f07e-495c-a9e6-e268398ebdd6";
 auto constexpr SHUNT_CONFIG_CHAR_UUID = "e030f283-f7f3-4df8-a0f5-f2af18d1cea6";
+auto constexpr RESET_CONFIG_CHAR_UUID = "b7e1c1a2-8e2b-4e2a-9c1a-1e2b3c4d5e6f";
 
 // Shunt constants
 #if VERSION == 200

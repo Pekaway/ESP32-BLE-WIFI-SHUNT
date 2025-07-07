@@ -39,7 +39,7 @@ void setup() {
   callbackHandler.init();
   externalBattery.init();
 
-  WiFiClass::mode(WIFI_AP_STA);
+  WiFiClass::mode(WIFI_STA);
   auto const ssid = config.get<String>(ConfigKey::WIFI_SSID);
   auto const password = config.get<String>(ConfigKey::WIFI_PASSWORD);
   WiFi.begin(ssid, password);

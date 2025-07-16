@@ -3,7 +3,7 @@
 // Set version to either 200A or 500A
 #define VERSION 500
 
-auto constexpr DEVICE_TYPE = "X_PW_SHUNT";
+auto constexpr DEVICE_TYPE = "P_PW_S";
 
 // BLE UUIDs
 auto constexpr SERVICE_UUID = "91bad492-b950-4226-aa2b-4ede9fa42f59";

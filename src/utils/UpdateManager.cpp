@@ -1,4 +1,5 @@
 #include "UpdateManager.h"
+#include <esp_bt.h>
 
 UpdateManager& UpdateManager::getInstance() {
   static UpdateManager instance;
@@ -32,6 +33,8 @@ bool UpdateManager::beginOTAUpdate(size_t expectedSize) {
     logger.warning("OTA update already in progress");
     return false;
   }
+
+  esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_DEFAULT, ESP_PWR_LVL_P9);
 
   if (!findNextOTAPartition()) {
     return false;
@@ -79,7 +82,7 @@ bool UpdateManager::writeOTAData(uint8_t* data, size_t len) {
 
   bytesWritten += len;
 
-  if (bytesWritten % 8192 == 0 || bytesWritten == totalSize) {
+  if (bytesWritten % 256 == 0 || bytesWritten == totalSize) {
     logger.info(
         ("OTA progress: " + String(getProgress()) + "% (" + String(bytesWritten) + "/" + String(totalSize) + ")")
             .c_str());
@@ -93,6 +96,8 @@ bool UpdateManager::endOTAUpdate() {
     logger.critical("No OTA update in progress");
     return false;
   }
+
+  esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_DEFAULT, ESP_PWR_LVL_N0);
 
   if (bytesWritten != totalSize) {
     logger.critical(("Incomplete update: " + String(bytesWritten) + "/" + String(totalSize)).c_str());

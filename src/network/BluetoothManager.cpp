@@ -16,13 +16,18 @@ void BluetoothManager::init(char const* serverName) {
   BLEDevice::init(serverName);
   BLEDevice::setMTU(512);
 
+  pServer = BLEDevice::createServer();
+  pServer->setCallbacks(new ServerCallbacks(this));
+  BLEAdvertising* pAdvertising = pServer->getAdvertising();
+
+  pAdvertising->addServiceUUID(SERVICE_UUID);
+  pAdvertising->setScanResponse(true);
+  pAdvertising->setMinPreferred(0x12);
+
   auto advData = BLEAdvertisementData();
   advData.setName(serverName);
   advData.setManufacturerData(DEVICE_TYPE);
-
-  pServer = BLEDevice::createServer();
-  pServer->setCallbacks(new ServerCallbacks(this));
-  pServer->getAdvertising()->setAdvertisementData(advData);
+  pAdvertising->setAdvertisementData(advData);
 
   service = pServer->createService(BLEUUID(SERVICE_UUID), 30, 0);
 
@@ -96,6 +101,23 @@ BLECharacteristic* BluetoothManager::createWriteCharacteristic(char const* charU
   return nullptr;
 }
 
+BLECharacteristic* BluetoothManager::createBinaryWriteCharacteristic(char const* charUUID,
+                                                                     std::function<void(uint8_t*, size_t)> callback,
+                                                                     uint8_t const properties) {
+  if (service) {
+    BLECharacteristic* characteristic = service->createCharacteristic(charUUID, properties);
+    characteristic->setCallbacks(new BinaryCharacteristicCallbacks(std::move(callback)));
+
+    String message = "Binary write characteristic created with UUID: ";
+    message += charUUID;
+    logger.info(message.c_str());
+
+    return characteristic;
+  }
+  logger.critical("Service is null");
+  return nullptr;
+}
+
 bool BluetoothManager::isConnected() const { return deviceConnected; }
 
 void BluetoothManager::ServerCallbacks::onConnect(BLEServer* pServer) {
@@ -113,5 +135,13 @@ void BluetoothManager::CharacteristicCallbacks::onWrite(BLECharacteristic* pChar
   String const value = pCharacteristic->getValue();
   if (callback) {
     callback(value);
+  }
+}
+
+void BluetoothManager::BinaryCharacteristicCallbacks::onWrite(BLECharacteristic* pCharacteristic) {
+  uint8_t* value = pCharacteristic->getData();
+  size_t const length = pCharacteristic->getLength();
+  if (callback && value != nullptr) {
+    callback(value, length);
   }
 }

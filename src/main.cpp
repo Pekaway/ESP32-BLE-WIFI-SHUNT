@@ -36,6 +36,8 @@ unsigned long startUpTime = millis();
 void setup() {
   Serial.begin(SERIAL_SPEED);
   logger.info("Starting setup...");
+  logger.info(("VERSION: " + String(VERSION)).c_str());
+  logger.info(("SOFTWARE_VERSION: " + String(SOFTWARE_VERSION)).c_str());
 
   config.init();
   resetManager.init();
@@ -76,9 +78,9 @@ void setup() {
   resetConfigChar = btManager.createWriteCharacteristic(
       RESET_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleResetAndDefaultConfig(value); },
       BLECharacteristic::PROPERTY_WRITE);
-  otaUpdateChar = btManager.createWriteCharacteristic(
-      OTA_UPDATE_CHAR_UUID, [](String const& value) { callbackHandler.handleOTAUpdate(value); },
-      BLECharacteristic::PROPERTY_WRITE);
+  otaUpdateChar = btManager.createBinaryWriteCharacteristic(
+      OTA_UPDATE_CHAR_UUID, [](uint8_t* data, size_t length) { callbackHandler.handleOTAUpdate(data, length); },
+      BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
 
   btManager.startAdvertising();
   callbackHandler.updateBatteryConfigCharacteristic(batteryConfigChar);
@@ -122,5 +124,5 @@ void loop() {
   btManager.handle();
   pixel.handle();
 
-  delay(1000);
+  delay(50);
 }

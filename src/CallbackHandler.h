@@ -25,7 +25,7 @@ class CallbackHandler {
   void handleBatteryConfig(String const& value);
   void handleShuntConfig(String const& value);
   void handleResetAndDefaultConfig(String const& value);
-  void handleOTAUpdate(String const& value);
+  void handleOTAUpdate(uint8_t* data, size_t length);
 
   void updateShuntStatus(BLECharacteristic* shuntStatusChar) const;
   void updateBatteryConfigCharacteristic(BLECharacteristic* batteryConfigChar) const;
@@ -42,6 +42,7 @@ class CallbackHandler {
   ConfigManager& config = ConfigManager::getInstance();
   ExternalBattery& externalBattery = ExternalBattery::getInstance();
   bool setupAllowed = true;
+  uint8_t expectedSeqNum = 0;
 
   bool isAllowed();
 };

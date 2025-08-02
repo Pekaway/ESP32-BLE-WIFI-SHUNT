@@ -4,7 +4,6 @@
 #include <utils/ConfigManager.h>
 #include <utils/NeoPixel.h>
 #include <WiFi.h>
-#include <mbedtls/base64.h>
 
 CallbackHandler& CallbackHandler::getInstance() {
   static CallbackHandler instance;
@@ -300,63 +299,83 @@ void CallbackHandler::handleResetAndDefaultConfig(String const& value) {
   ESP.restart();
 }
 
-void CallbackHandler::handleOTAUpdate(String const& value) {
-  logger.info("Received OTA update data");
+void CallbackHandler::handleOTAUpdate(uint8_t* data, size_t length) {
+  if (length < 4) {
+    logger.warning("OTA packet too short");
+    return;
+  }
 
   UpdateManager& updateManager = UpdateManager::getInstance();
 
-  if (value.startsWith("BEGIN:")) {
-    String sizeStr = value.substring(6);
-    size_t expectedSize = sizeStr.toInt();
+  uint8_t cmdType = data[0];
+  uint16_t payloadSize = (data[2] << 8) | data[1];  // Little-endian
+  uint8_t seqNum = data[3];
+  uint8_t* payload = data + 4;
 
-    if (expectedSize > 0) {
-      logger.info(("Starting OTA update with size: " + String(expectedSize)).c_str());
-      if (!updateManager.beginOTAUpdate(expectedSize)) {
-        logger.critical("Failed to begin OTA update");
-      }
-    } else {
-      logger.critical("Invalid OTA size received");
-    }
-  } else if (value.startsWith("DATA:")) {
-    String base64Data = value.substring(5);
+  if (length != payloadSize + 4) {
+    logger.warning("OTA packet size mismatch");
+    return;
+  }
 
-    if (updateManager.isUpdateInProgress()) {
-      size_t decodedLen = base64Data.length() * 3 / 4;
-      auto* decodedData = new uint8_t[decodedLen];
-      size_t actualLen = 0;
+  switch (cmdType) {
+    case 0x01:  // BEGIN
+      if (payloadSize == 4) {
+        uint32_t expectedSize = (payload[3] << 24) | (payload[2] << 16) | (payload[1] << 8) | payload[0];
 
-      int ret = mbedtls_base64_decode(decodedData, decodedLen, &actualLen, 
-                                      reinterpret_cast<const unsigned char*>(base64Data.c_str()), 
-                                      base64Data.length());
-
-      if (ret == 0 && actualLen > 0) {
-        if (!updateManager.writeOTAData(decodedData, actualLen)) {
-          logger.critical("Failed to write OTA data");
+        if (expectedSize > 0) {
+          logger.info(("Starting binary OTA update with size: " + String(expectedSize)).c_str());
+          expectedSeqNum = 0;
+          if (!updateManager.beginOTAUpdate(expectedSize)) {
+            logger.critical("Failed to begin OTA update");
+          }
+        } else {
+          logger.critical("Invalid OTA size received");
         }
       } else {
-        logger.critical(("Failed to decode base64 OTA data, error: " + String(ret)).c_str());
+        logger.critical("Invalid BEGIN payload size");
       }
+      break;
 
-      delete[] decodedData;
-    } else {
-      logger.warning("Received OTA data but no update in progress");
-    }
-  } else if (value == "END") {
-    if (updateManager.isUpdateInProgress()) {
-      logger.info("Ending OTA update");
-      if (updateManager.endOTAUpdate()) {
-        logger.info("OTA update completed successfully, restarting...");
-        updateManager.switchToNewFirmware();
+    case 0x02:  // DATA
+      if (updateManager.isUpdateInProgress()) {
+        if (seqNum != expectedSeqNum) {
+          logger.warning(
+              ("Sequence number mismatch: expected " + String(expectedSeqNum) + ", got " + String(seqNum)).c_str());
+          return;
+        }
+
+        if (!updateManager.writeOTAData(payload, payloadSize)) {
+          logger.critical("Failed to write OTA data");
+        } else {
+          expectedSeqNum++;
+        }
       } else {
-        logger.critical("Failed to complete OTA update");
+        logger.warning("Received OTA data but no update in progress");
       }
-    } else {
-      logger.warning("Received OTA END but no update in progress");
-    }
-  } else if (value == "ABORT") {
-    logger.info("Aborting OTA update");
-    updateManager.abortOTAUpdate();
-  } else {
-    logger.warning(("Unknown OTA command: " + value).c_str());
+      break;
+
+    case 0x03:  // END
+      if (updateManager.isUpdateInProgress()) {
+        logger.info("Ending binary OTA update");
+        if (updateManager.endOTAUpdate()) {
+          logger.info("OTA update completed successfully, restarting...");
+          updateManager.switchToNewFirmware();
+        } else {
+          logger.critical("Failed to complete OTA update");
+        }
+      } else {
+        logger.warning("Received OTA END but no update in progress");
+      }
+      break;
+
+    case 0x04:  // ABORT
+      logger.info("Aborting binary OTA update");
+      updateManager.abortOTAUpdate();
+      expectedSeqNum = 0;
+      break;
+
+    default:
+      logger.warning(("Unknown binary OTA command: 0x" + String(cmdType, HEX)).c_str());
+      break;
   }
 }

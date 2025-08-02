@@ -7,6 +7,7 @@
 #include <utils/ConfigManager.h>
 #include <utils/NeoPixel.h>
 #include <utils/ResetManager.h>
+#include <utils/UpdateManager.h>
 #include <Arduino.h>
 #include <Logger.h>
 #include <WiFi.h>
@@ -28,6 +29,7 @@ BLECharacteristic* wifiConfigChar;
 BLECharacteristic* mqttConfigChar;
 BLECharacteristic* shuntConfigChar;
 BLECharacteristic* resetConfigChar;
+BLECharacteristic* otaUpdateChar;
 
 unsigned long startUpTime = millis();
 
@@ -73,6 +75,9 @@ void setup() {
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
   resetConfigChar = btManager.createWriteCharacteristic(
       RESET_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleResetAndDefaultConfig(value); },
+      BLECharacteristic::PROPERTY_WRITE);
+  otaUpdateChar = btManager.createWriteCharacteristic(
+      OTA_UPDATE_CHAR_UUID, [](String const& value) { callbackHandler.handleOTAUpdate(value); },
       BLECharacteristic::PROPERTY_WRITE);
 
   btManager.startAdvertising();

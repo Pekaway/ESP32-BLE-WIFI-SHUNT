@@ -3,6 +3,7 @@
 // Set version to either 200A or 500A
 #define VERSION 500
 
+auto constexpr SOFTWARE_VERSION = 1;
 auto constexpr DEVICE_TYPE = "P_PW_S";
 
 // BLE UUIDs
@@ -15,6 +16,7 @@ auto constexpr MQTT_CONFIG_CHAR_UUID = "2f681ce5-f2b0-4034-b714-d87156af4b5a";
 auto constexpr WIFI_CHAR_UUID = "785840ec-f07e-495c-a9e6-e268398ebdd6";
 auto constexpr SHUNT_CONFIG_CHAR_UUID = "e030f283-f7f3-4df8-a0f5-f2af18d1cea6";
 auto constexpr RESET_CONFIG_CHAR_UUID = "b7e1c1a2-8e2b-4e2a-9c1a-1e2b3c4d5e6f";
+auto constexpr OTA_UPDATE_CHAR_UUID = "694585b8-f207-4d54-bd68-f247c50b1c0c";
 
 // Shunt constants
 #if VERSION == 200

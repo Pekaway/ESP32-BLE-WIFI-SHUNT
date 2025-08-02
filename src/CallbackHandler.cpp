@@ -4,6 +4,7 @@
 #include <utils/ConfigManager.h>
 #include <utils/NeoPixel.h>
 #include <WiFi.h>
+#include <mbedtls/base64.h>
 
 CallbackHandler& CallbackHandler::getInstance() {
   static CallbackHandler instance;
@@ -282,6 +283,8 @@ void CallbackHandler::updateShuntConfigCharacteristic(BLECharacteristic* shuntCo
   doc["ledEnabled"] = config.get<bool>(ConfigKey::LED_ENABLED);
   doc["uptime"] = millis();
   doc["setupAllowed"] = setupAllowed;
+  doc["softwareVersion"] = SOFTWARE_VERSION;
+  doc["version"] = VERSION;
 
   String json_string;
   serializeJson(doc, json_string);
@@ -295,4 +298,65 @@ void CallbackHandler::handleResetAndDefaultConfig(String const& value) {
   logger.info("Shunt reset and default config applied, now restarting...");
   delay(1000);
   ESP.restart();
+}
+
+void CallbackHandler::handleOTAUpdate(String const& value) {
+  logger.info("Received OTA update data");
+
+  UpdateManager& updateManager = UpdateManager::getInstance();
+
+  if (value.startsWith("BEGIN:")) {
+    String sizeStr = value.substring(6);
+    size_t expectedSize = sizeStr.toInt();
+
+    if (expectedSize > 0) {
+      logger.info(("Starting OTA update with size: " + String(expectedSize)).c_str());
+      if (!updateManager.beginOTAUpdate(expectedSize)) {
+        logger.critical("Failed to begin OTA update");
+      }
+    } else {
+      logger.critical("Invalid OTA size received");
+    }
+  } else if (value.startsWith("DATA:")) {
+    String base64Data = value.substring(5);
+
+    if (updateManager.isUpdateInProgress()) {
+      size_t decodedLen = base64Data.length() * 3 / 4;
+      auto* decodedData = new uint8_t[decodedLen];
+      size_t actualLen = 0;
+
+      int ret = mbedtls_base64_decode(decodedData, decodedLen, &actualLen, 
+                                      reinterpret_cast<const unsigned char*>(base64Data.c_str()), 
+                                      base64Data.length());
+
+      if (ret == 0 && actualLen > 0) {
+        if (!updateManager.writeOTAData(decodedData, actualLen)) {
+          logger.critical("Failed to write OTA data");
+        }
+      } else {
+        logger.critical(("Failed to decode base64 OTA data, error: " + String(ret)).c_str());
+      }
+
+      delete[] decodedData;
+    } else {
+      logger.warning("Received OTA data but no update in progress");
+    }
+  } else if (value == "END") {
+    if (updateManager.isUpdateInProgress()) {
+      logger.info("Ending OTA update");
+      if (updateManager.endOTAUpdate()) {
+        logger.info("OTA update completed successfully, restarting...");
+        updateManager.switchToNewFirmware();
+      } else {
+        logger.critical("Failed to complete OTA update");
+      }
+    } else {
+      logger.warning("Received OTA END but no update in progress");
+    }
+  } else if (value == "ABORT") {
+    logger.info("Aborting OTA update");
+    updateManager.abortOTAUpdate();
+  } else {
+    logger.warning(("Unknown OTA command: " + value).c_str());
+  }
 }

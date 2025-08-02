@@ -4,6 +4,7 @@
 #include <sensors/ExternalBattery.h>
 #include <sensors/Shunt.h>
 #include <utils/ConfigManager.h>
+#include <utils/UpdateManager.h>
 #include <Arduino.h>
 #include <BLECharacteristic.h>
 #include <Logger.h>
@@ -24,6 +25,7 @@ class CallbackHandler {
   void handleBatteryConfig(String const& value);
   void handleShuntConfig(String const& value);
   void handleResetAndDefaultConfig(String const& value);
+  void handleOTAUpdate(String const& value);
 
   void updateShuntStatus(BLECharacteristic* shuntStatusChar) const;
   void updateBatteryConfigCharacteristic(BLECharacteristic* batteryConfigChar) const;

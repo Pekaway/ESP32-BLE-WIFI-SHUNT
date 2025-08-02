@@ -14,6 +14,7 @@ BluetoothManager& BluetoothManager::getInstance() {
 
 void BluetoothManager::init(char const* serverName) {
   BLEDevice::init(serverName);
+  BLEDevice::setMTU(512);
 
   auto advData = BLEAdvertisementData();
   advData.setName(serverName);

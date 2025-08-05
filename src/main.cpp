@@ -124,5 +124,5 @@ void loop() {
   btManager.handle();
   pixel.handle();
 
-  delay(50);
+  delay(1000);
 }

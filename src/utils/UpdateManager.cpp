@@ -105,8 +105,7 @@ bool UpdateManager::endOTAUpdate() {
     return false;
   }
 
-  esp_err_t err = esp_ota_end(otaHandle);
-  if (err != ESP_OK) {
+  if (esp_err_t const err = esp_ota_end(otaHandle); err != ESP_OK) {
     logger.critical(("Failed to end OTA update: " + String(esp_err_to_name(err))).c_str());
     updateInProgress = false;
     return false;
@@ -134,8 +133,7 @@ bool UpdateManager::validatePartition() {
     return false;
   }
 
-  esp_err_t err = esp_ota_set_boot_partition(otaPartition);
-  if (err != ESP_OK) {
+  if (esp_err_t const err = esp_ota_set_boot_partition(otaPartition); err != ESP_OK) {
     logger.critical(("Failed to set boot partition: " + String(esp_err_to_name(err))).c_str());
     return false;
   }

@@ -307,9 +307,9 @@ void CallbackHandler::handleOTAUpdate(uint8_t* data, size_t length) {
 
   UpdateManager& updateManager = UpdateManager::getInstance();
 
-  uint8_t cmdType = data[0];
-  uint16_t payloadSize = (data[2] << 8) | data[1];  // Little-endian
-  uint8_t seqNum = data[3];
+  uint8_t const cmdType = data[0];
+  uint16_t const payloadSize = (data[2] << 8) | data[1];
+  uint8_t const seqNum = data[3];
   uint8_t* payload = data + 4;
 
   if (length != payloadSize + 4) {
@@ -320,11 +320,11 @@ void CallbackHandler::handleOTAUpdate(uint8_t* data, size_t length) {
   switch (cmdType) {
     case 0x01:  // BEGIN
       if (payloadSize == 4) {
-        uint32_t expectedSize = (payload[3] << 24) | (payload[2] << 16) | (payload[1] << 8) | payload[0];
-
-        if (expectedSize > 0) {
+        if (uint32_t const expectedSize = (payload[3] << 24) | (payload[2] << 16) | (payload[1] << 8) | payload[0];
+            expectedSize > 0) {
           logger.info(("Starting binary OTA update with size: " + String(expectedSize)).c_str());
           expectedSeqNum = 0;
+
           if (!updateManager.beginOTAUpdate(expectedSize)) {
             logger.critical("Failed to begin OTA update");
           }
@@ -357,6 +357,7 @@ void CallbackHandler::handleOTAUpdate(uint8_t* data, size_t length) {
     case 0x03:  // END
       if (updateManager.isUpdateInProgress()) {
         logger.info("Ending binary OTA update");
+
         if (updateManager.endOTAUpdate()) {
           logger.info("OTA update completed successfully, restarting...");
           updateManager.switchToNewFirmware();

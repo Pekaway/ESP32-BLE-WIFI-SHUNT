@@ -22,10 +22,10 @@ class UpdateManager {
   bool validatePartition();
   bool switchToNewFirmware();
 
-  size_t getBytesWritten() const { return bytesWritten; }
-  size_t getTotalSize() const { return totalSize; }
-  uint8_t getProgress() const;
-  bool isUpdateInProgress() const { return updateInProgress; }
+  [[nodiscard]] size_t getBytesWritten() const { return bytesWritten; }
+  [[nodiscard]] size_t getTotalSize() const { return totalSize; }
+  [[nodiscard]] uint8_t getProgress() const;
+  [[nodiscard]] bool isUpdateInProgress() const { return updateInProgress; }
 
  private:
   UpdateManager();

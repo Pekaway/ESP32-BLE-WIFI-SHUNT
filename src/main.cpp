@@ -124,5 +124,9 @@ void loop() {
   btManager.handle();
   pixel.handle();
 
+  if (currentTime > SHUNT_AUTO_RESTART_INTERVAL) {
+    ESP.restart();
+  }
+
   delay(1000);
 }

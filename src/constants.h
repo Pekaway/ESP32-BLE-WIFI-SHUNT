@@ -64,5 +64,6 @@ constexpr uint32_t SERIAL_SPEED = 115200;
 auto const BLE_SERVER_NAME = "Pekaway Shunt";
 auto constexpr SETUP_TIME = 5 * 60 * 1000;
 auto constexpr SHUNT_UPDATE_INTERVAL = 3 * 1000;
+auto constexpr SHUNT_AUTO_RESTART_INTERVAL = 7 * 24 * 60 * 60 * 1000;
 
 #endif  // CONSTANTS_H

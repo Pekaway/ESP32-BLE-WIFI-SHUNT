@@ -4,9 +4,14 @@
 
 NeoPixel::NeoPixel() {
   logger.prependLog = [] { return "NeoPixel"; };
+  setUpAllowed = true;
+}
 
+void NeoPixel::init() {
   pixel = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, NEO_GRB + NEO_KHZ800);
   pixel.begin();
+
+  setUpAllowed = !config.get<bool>(ConfigKey::SCHEDULED_RESTART, false);
 }
 
 NeoPixel& NeoPixel::getInstance() {

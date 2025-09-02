@@ -12,7 +12,7 @@ class NeoPixel {
 
   static NeoPixel& getInstance();
 
-  void begin();
+  void init();
   void blue();
   void red();
   void handle();
@@ -27,7 +27,7 @@ class NeoPixel {
   Adafruit_NeoPixel pixel;
   Shunt& shunt = Shunt::getInstance();
   ConfigManager& config = ConfigManager::getInstance();
-  bool setUpAllowed = true;
+  bool setUpAllowed;
 
   Logger logger = Logger(Serial);
 };

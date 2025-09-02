@@ -19,6 +19,7 @@ enum class ConfigKey {
   WIFI_SSID,
   WIFI_PASSWORD,
   LED_ENABLED,
+  SCHEDULED_RESTART,
 };
 
 class ConfigKeys {
@@ -38,7 +39,8 @@ class ConfigKeys {
         {ConfigKey::WIFI_SSID, "wifi_ssid"},
         {ConfigKey::WIFI_PASSWORD, "wifi_password"},
         {ConfigKey::LED_ENABLED, "led_enabled"},
-        {ConfigKey::MAXIMUM_CAPACITY_MAMS, "maximum_capacity_mams"}};
+        {ConfigKey::MAXIMUM_CAPACITY_MAMS, "maximum_capacity_mams"},
+        {ConfigKey::SCHEDULED_RESTART, "scheduled_restart"}};
 
     if (auto const it = keyToStringMap.find(key); it != keyToStringMap.end()) {
       return it->second;

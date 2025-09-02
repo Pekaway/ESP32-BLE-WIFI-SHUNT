@@ -138,4 +138,5 @@ void ConfigManager::createDefaultConfig() {
   jsonDoc[ConfigKeys::toString(ConfigKey::WIFI_PASSWORD)] = nullptr;
   jsonDoc[ConfigKeys::toString(ConfigKey::WIFI_SSID)] = nullptr;
   jsonDoc[ConfigKeys::toString(ConfigKey::LED_ENABLED)] = true;
+  jsonDoc[ConfigKeys::toString(ConfigKey::SCHEDULED_RESTART)] = false;
 }

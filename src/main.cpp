@@ -43,6 +43,7 @@ void setup() {
   resetManager.init();
   callbackHandler.init();
   externalBattery.init();
+  pixel.init();
 
   WiFiClass::mode(WIFI_STA);
   auto const ssid = config.get<String>(ConfigKey::WIFI_SSID);
@@ -91,6 +92,9 @@ void setup() {
 
   mqttManager.begin();
 
+  config.set(ConfigKey::SCHEDULED_RESTART, false);
+  config.saveConfig();
+
   logger.info("Setup complete");
 }
 
@@ -125,6 +129,9 @@ void loop() {
   pixel.handle();
 
   if (currentTime > SHUNT_AUTO_RESTART_INTERVAL) {
+    config.set(ConfigKey::SCHEDULED_RESTART, true);
+    config.saveConfig();
+    logger.info("Scheduled restart interval reached, restarting...");
     ESP.restart();
   }
 

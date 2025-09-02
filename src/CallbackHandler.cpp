@@ -14,7 +14,7 @@ CallbackHandler::CallbackHandler() {
   logger.prependLog = [] { return "CALLBACK"; };
 }
 
-void CallbackHandler::init() { setupAllowed = true; }
+void CallbackHandler::init() { setupAllowed = !config.get(ConfigKey::SCHEDULED_RESTART, false); }
 
 void CallbackHandler::closeSetup() {
   setupAllowed = false;

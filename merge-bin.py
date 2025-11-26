@@ -18,10 +18,9 @@ def merge_bin_files(env):
     OUTPUT_DIR = join(env['PROJECT_BUILD_DIR'], '..', 'bin')
 
     output_dir = env.GetProjectOption('merge_bin_output_dir', default=OUTPUT_DIR)
-    output_file = env.GetProjectOption('merge_bin_output_file', default="{0}_{1}_{2}.bin".format(
-        os.path.basename(env['PROJECT_DIR']),
-        env['PIOENV'],
-        time.strftime("%Y%m%d_%H%M%S", time.localtime())
+    output_file = env.GetProjectOption('merge_bin_output_file', default="{0}_{1}_.bin".format(
+        time.strftime("%Y%m%d", time.localtime()),
+        "SHUNT"
     ))
 
     if not os.path.exists(output_dir):

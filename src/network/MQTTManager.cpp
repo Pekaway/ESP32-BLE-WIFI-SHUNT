@@ -160,8 +160,8 @@ boolean MQTTManager::connect(bool const forceReconnect) {
   }
 
   char logMessage[128];
-  snprintf(logMessage, sizeof(logMessage), "Connecting to MQTT broker at %s:%d with username '%s' and password '%s'",
-           server.c_str(), port, username.c_str(), password.c_str());
+  snprintf(logMessage, sizeof(logMessage), "Connecting to MQTT broker at %s:%d with username '%s'", server.c_str(),
+           port, username.c_str());
   logger.info(logMessage);
 
   client.begin(server.c_str(), port, net);

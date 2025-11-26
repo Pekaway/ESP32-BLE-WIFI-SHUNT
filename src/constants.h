@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 // Set version to either 200A or 500A
-#define VERSION 500
+#define VERSION 200
 
 auto constexpr SOFTWARE_VERSION = 1;
 auto constexpr DEVICE_TYPE = "P_PW_S";

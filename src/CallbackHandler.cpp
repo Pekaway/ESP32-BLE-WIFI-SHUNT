@@ -42,10 +42,6 @@ void CallbackHandler::handleMQTTConfig(String const& value) {
       return;
     }
 
-    String jsonStr;
-    serializeJson(doc, jsonStr);
-    logger.info(("Parsed JSON: " + jsonStr).c_str());
-
     ConfigManager& config = ConfigManager::getInstance();
 
     if (doc["user"].is<String>()) {
@@ -81,7 +77,7 @@ void CallbackHandler::handleMQTTConfig(String const& value) {
 }
 
 void CallbackHandler::handleWiFi(String const& value) {
-  logger.info(("Received WiFi: " + value).c_str());
+  logger.info("Received WiFi");
   if (isAllowed()) {
     JsonDocument doc;
     DeserializationError const error = deserializeJson(doc, value);
@@ -267,7 +263,6 @@ void CallbackHandler::updateMqttConfigCharacteristic(BLECharacteristic* mqttConf
   doc["server"] = config.get<String>(ConfigKey::MQTT_SERVER);
   doc["port"] = config.get<uint16_t>(ConfigKey::MQTT_PORT);
   doc["user"] = config.get<String>(ConfigKey::MQTT_USER);
-  doc["password"] = config.get<String>(ConfigKey::MQTT_PASSWORD);
   doc["connected"] = MQTTManager::getInstance().isConnected();
   doc["setupAllowed"] = setupAllowed;
 

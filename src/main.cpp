@@ -7,7 +7,6 @@
 #include <utils/ConfigManager.h>
 #include <utils/NeoPixel.h>
 #include <utils/ResetManager.h>
-#include <utils/UpdateManager.h>
 #include <Arduino.h>
 #include <Logger.h>
 #include <WiFi.h>

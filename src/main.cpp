@@ -72,13 +72,13 @@ void setup() {
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
   wifiConfigChar = btManager.createWriteCharacteristic(
       WIFI_CHAR_UUID, [](String const& value) { callbackHandler.handleWiFi(value); },
-      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
+      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
   shuntConfigChar = btManager.createWriteCharacteristic(
       SHUNT_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleShuntConfig(value); },
       BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE);
   resetConfigChar = btManager.createWriteCharacteristic(
       RESET_CONFIG_CHAR_UUID, [](String const& value) { callbackHandler.handleResetAndDefaultConfig(value); },
-      BLECharacteristic::PROPERTY_WRITE);
+      BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
   otaUpdateChar = btManager.createBinaryWriteCharacteristic(
       OTA_UPDATE_CHAR_UUID, [](uint8_t* data, size_t length) { callbackHandler.handleOTAUpdate(data, length); },
       BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);

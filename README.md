@@ -3,7 +3,7 @@
 ## Flash
 
 ```bash
-  esptool --after hard_reset --before default_reset write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0x0 shunt-firmware.bin
+  esptool --after hard_reset --before default_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x0 shunt-firmware.bin
 ```
 
 ## Build
@@ -23,7 +23,7 @@
 3. Flash merged bin
 
 ```bash
-  esptool --after hard_reset --before default_reset write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0x0 .pio/build/esp32-c3-devkitm-1/firmware-merged.bin
+  esptool --after hard_reset --before default_reset write_flash -z --flash_mode dio --flash_freq 40m --flash_size detect 0x0 .pio/build/esp32-c3-devkitm-1/firmware-merged.bin
 ```
 
 ## Dev Build
